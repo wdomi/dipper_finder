@@ -4,51 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dipper Finder</title>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 20px;
-      background: #f8f8f8;
-      color: #333;
-      text-align: center;
-    }
-    h1 { color: #2a4d69; }
-    .section {
-      margin: 1em auto;
-      padding: 1em;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 600px;
-    }
-    button.color {
-      border: none;
-      margin: 3px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-      font-weight: bold;
-    }
-    button.color.selected { outline: 3px solid #000; }
-    .metal { background: gray; }
-    .red { background: red; }
-    .yellow { background: goldenrod; color: black; }
-    .green { background: green; }
-    .blue { background: steelblue; }
-    .black { background: black; }
-    .white { background: white; color: black; border: 1px solid #ccc; }
-    .violet { background: purple; }
-    .pink { background: hotpink; color: black; }
-    .result {
-      background: #eef;
-      border-radius: 6px;
-      margin: 5px;
-      padding: 6px;
-      text-align: left;
-    }
-    #results { text-align: left; margin-top: 10px; }
-  </style>
+
+
+<style>
+body {
+  font-family: sans-serif;
+  margin: 1em;
+}
+h2 {
+  margin-top: 1.5em;
+}
+button.color {
+  margin: 4px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+}
+button.selected {
+  outline: 3px solid #000;
+}
+#results {
+  margin-top: 1em;
+  font-family: monospace;
+  line-height: 1.4;
+}
+.metal { background: #999; }
+.red { background: #d33; }
+.yellow { background: #ec3; color: #000; }
+.green { background: #3a3; }
+.blue { background: #39f; }
+.black { background: #000; }
+.white { background: #fff; color: #000; border: 1px solid #aaa; } /* 👈 fixed */
+.violet { background: #93f; }
+.pink { background: #f6a; color: #000; }
+
+#resetBtn {
+  background: #666;
+  color: #fff;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  margin-bottom: 1em;
+}
+.result {
+  margin-bottom: 0.4em;
+}
+</style>
+
+
+
 </head>
 <body>
   <h1>🕊️ Dipper Finder</h1>
