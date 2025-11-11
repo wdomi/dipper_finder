@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Dipper Finder – Auto</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body{font-family:sans-serif;margin:1em}
+h2{margin-top:1.5em}
+button.color{margin:4px;padding:8px 12px;border:none;border-radius:4px;color:#fff}
+button.selected{outline:3px solid #000}
+#results{margin-top:1em;font-family:monospace;line-height:1.4}
+.metal{background:#999}.red{background:#d33}.yellow{background:#ec3;color:#000}
+.green{background:#3a3}.blue{background:#39f}.black{background:#000}
+.white{background:#eee;color:#000}.violet{background:#93f}.pink{background:#f6a}
+#resetBtn{background:#666;color:#fff;padding:8px 14px;border:none;border-radius:6px;margin-bottom:1em}
+.result{margin-bottom:0.4em}
+</style>
+</head>
+<body>
+<h1>Dipper Finder (Auto)</h1>
+<p><i>Automatically loading <b>view_birdsCSV_apps.csv</b>...</i></p>
+<button id="resetBtn">Reset</button>
+<h2>Right leg</h2><div id="rightButtons"></div>
+<h2>Left leg</h2><div id="leftButtons"></div>
+<div id="results"></div>
+
+<script>
+const colors=["metal","red","yellow","green","blue","black","white","violet","pink"];
+const leftSel=new Set(),rightSel=new Set();let birds=[];
+const res=document.getElementById("results");
+
+function short(c){return c?c.slice(0,3):"";}
+
+function makeButtons(side,container){
+  colors.forEach(c=>{
+    const b=document.createElement("button");
+    b.textContent=c;b.className="color "+c;
+    b.onclick=()=>{toggleSelect(side,c,b);filter();};
+    container.appendChild(b);
+  });
+}
+function toggleSelect(side,color,btn){
+  const set=side==="L"?leftSel:rightSel;
+  if(set.has(color)){set.delete(color);btn.classList.remove("selected");}
+  else if(set.size<2){set.add(color);btn.classList.add("selected");}
+  else{alert("Max 2 colors per leg");}
+}
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  const headers=lines[0].split(/[\t,]/).map(h=>h.trim().toLowerCase());
+  const gi=h=>headers.indexOf(h);
+  const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
+        iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)");
+  return lines.slice(1).map(r=>{
+    const c=r.split(/[\t,]/).map(x=>x.trim().toLowerCase());
+    return {
+      Rt:c[iRt]||"", Rb:c[iRb]||"", Lt:c[iLt]||"", Lb:c[iLb]||"",
+      name:c[iName]||"", terr:c[iTerr]||"", dist:c[iDist]||""
+    };
+  });
+}
+
+function matches(b){
+  const leftOk=[b.Lt,b.Lb].filter(Boolean);
+  const rightOk=[b.Rt,b.Rb].filter(Boolean);
+  const L=[...leftSel],R=[...rightSel];
+  return (!L.length||L.every(x=>leftOk.includes(x))) && (!R.length||R.every(x=>rightOk.includes(x)));
+}
+
+function filter(){
+  if(!birds.length)return;
+  const m=birds.filter(matches);
+  res.innerHTML=m.length
+    ? "<h2>Matches ("+m.length+")</h2>"+m.map(x=>
+      `<div class="result">🕊️ <b>${x.name}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
+    ).join("")
+    : "<p>No matches.</p>";
+}
+
+function resetAll(){
+  leftSel.clear();rightSel.clear();res.innerHTML="";
+  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
+}
+document.getElementById("resetBtn").onclick=resetAll;
+
+makeButtons("R",document.getElementById("rightButtons"));
+makeButtons("L",document.getElementById("leftButtons"));
+
+// --- Auto-load CSV file from GitHub Pages root ---
+fetch('view_birdsCSV_apps.csv')
+  .then(r=>{
+    if(!r.ok) throw new Error("Could not load CSV");
+    return r.text();
+  })
+  .then(text=>{
+    birds=parseCSV(text);
+    filter();
+  })
+  .catch(err=>{
+    res.innerHTML="<p style='color:red'>⚠️ Failed to load CSV: "+err+"</p>";
+  });
+</script>
+</body>
+</html>
