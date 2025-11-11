@@ -1,108 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Dipper Finder – Auto</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-body{font-family:sans-serif;margin:1em}
-h2{margin-top:1.5em}
-button.color{margin:4px;padding:8px 12px;border:none;border-radius:4px;color:#fff;cursor:pointer}
-button.selected{outline:3px solid #000}
-#results{margin-top:1em;font-family:monospace;line-height:1.4}
-.metal{background:#999}.red{background:#d33}.yellow{background:#ec3;color:#000}
-.green{background:#3a3}.blue{background:#39f}.black{background:#000}
-.white{background:#eee;color:#000}.violet{background:#93f}.pink{background:#f6a}
-#resetBtn{background:#666;color:#fff;padding:8px 14px;border:none;border-radius:6px;margin-bottom:1em;cursor:pointer}
-.result{margin-bottom:0.4em}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dipper Finder</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      margin: 20px;
+      background: #f8f8f8;
+      color: #333;
+      text-align: center;
+    }
+    h1 { color: #2a4d69; }
+    .section {
+      margin: 1em auto;
+      padding: 1em;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    button.color {
+      border: none;
+      margin: 3px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      font-weight: bold;
+    }
+    button.color.selected { outline: 3px solid #000; }
+    .metal { background: gray; }
+    .red { background: red; }
+    .yellow { background: goldenrod; color: black; }
+    .green { background: green; }
+    .blue { background: steelblue; }
+    .black { background: black; }
+    .white { background: white; color: black; border: 1px solid #ccc; }
+    .violet { background: purple; }
+    .pink { background: hotpink; color: black; }
+    .result {
+      background: #eef;
+      border-radius: 6px;
+      margin: 5px;
+      padding: 6px;
+      text-align: left;
+    }
+    #results { text-align: left; margin-top: 10px; }
+  </style>
 </head>
 <body>
-<h1>Dipper Finder (Auto)</h1>
-<p><i>Automatically loading <b>view_birdsCSV_apps.csv</b>...</i></p>
-<button id="resetBtn">Reset</button>
-<h2>Right leg</h2><div id="rightButtons"></div>
-<h2>Left leg</h2><div id="leftButtons"></div>
-<div id="results"></div>
+  <h1>🕊️ Dipper Finder</h1>
+  <div class="section">
+    <h2>Right Leg</h2>
+    <div id="rightButtons"></div>
+  </div>
+  <div class="section">
+    <h2>Left Leg</h2>
+    <div id="leftButtons"></div>
+  </div>
+  <div>
+    <button id="resetBtn">Reset</button>
+  </div>
+  <div id="results">Automatically loading <b>view_birdsCSV_apps.csv</b>...</div>
 
-<script>
-const colors=["metal","red","yellow","green","blue","black","white","violet","pink"];
-const leftSel=new Set(),rightSel=new Set();let birds=[];
-const res=document.getElementById("results");
+  <script>
+    const colors=["metal","red","yellow","green","blue","black","white","violet","pink"];
+    const leftSel=new Set(),rightSel=new Set();let birds=[];
+    const res=document.getElementById("results");
 
-function short(c){return c?c.slice(0,3):"";}
+    function short(c){return c?c.slice(0,3):"";}
+    function makeButtons(side,container){
+      colors.forEach(c=>{
+        const b=document.createElement("button");
+        b.textContent=c;b.className="color "+c;
+        b.onclick=()=>{toggleSelect(side,c,b);filter();};
+        container.appendChild(b);
+      });
+    }
+    function toggleSelect(side,color,btn){
+      const set=side==="L"?leftSel:rightSel;
+      if(set.has(color)){set.delete(color);btn.classList.remove("selected");}
+      else if(set.size<2){set.add(color);btn.classList.add("selected");}
+      else{alert("Max 2 colors per leg");}
+    }
 
-function makeButtons(side,container){
-  colors.forEach(c=>{
-    const b=document.createElement("button");
-    b.textContent=c;b.className="color "+c;
-    b.onclick=()=>{toggleSelect(side,c,b);filter();};
-    container.appendChild(b);
-  });
-}
+    // Robust CSV parser (handles quotes and commas correctly)
+    function parseCSV(text){
+      const lines=text.trim().split(/\r?\n/);
+      const headers=lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
+      const gi=h=>headers.indexOf(h);
 
-function toggleSelect(side,color,btn){
-  const set=side==="L"?leftSel:rightSel;
-  if(set.has(color)){set.delete(color);btn.classList.remove("selected");}
-  else if(set.size<2){set.add(color);btn.classList.add("selected");}
-  else{alert("Max 2 colors per leg");}
-}
+      const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
+            iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)");
 
-function parseCSV(text){
-  const lines=text.trim().split(/\r?\n/);
-  const headers=lines[0].split(/[\t,]/).map(h=>h.trim().toLowerCase());
-  const gi=h=>headers.indexOf(h);
-  const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
-        iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)");
-  return lines.slice(1).map(r=>{
-    const c=r.split(/[\t,]/).map(x=>x.trim().toLowerCase());
-    return {
-      Rt:c[iRt]||"", Rb:c[iRb]||"", Lt:c[iLt]||"", Lb:c[iLb]||"",
-      name:c[iName]||"", terr:c[iTerr]||"", dist:c[iDist]||""
-    };
-  });
-}
+      // Regex-based split for handling quotes
+      return lines.slice(1).map(row=>{
+        const cols = [];
+        row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
+          cols.push(x.replace(/^"|"$/g,'').trim());
+        });
+        return {
+          Rt:(cols[iRt]||"").toLowerCase(),
+          Rb:(cols[iRb]||"").toLowerCase(),
+          Lt:(cols[iLt]||"").toLowerCase(),
+          Lb:(cols[iLb]||"").toLowerCase(),
+          name:(cols[iName]||"").replace(/null/i,""),
+          terr:(cols[iTerr]||""),
+          dist:(cols[iDist]||"")
+        };
+      });
+    }
 
-function matches(b){
-  const leftOk=[b.Lt,b.Lb].filter(Boolean);
-  const rightOk=[b.Rt,b.Rb].filter(Boolean);
-  const L=[...leftSel],R=[...rightSel];
-  return (!L.length||L.every(x=>leftOk.includes(x))) && (!R.length||R.every(x=>rightOk.includes(x)));
-}
+    function matches(b){
+      const leftOk=[b.Lt,b.Lb].filter(Boolean);
+      const rightOk=[b.Rt,b.Rb].filter(Boolean);
+      const L=[...leftSel],R=[...rightSel];
+      return (!L.length||L.every(x=>leftOk.includes(x))) && (!R.length||R.every(x=>rightOk.includes(x)));
+    }
+    function filter(){
+      if(!birds.length)return;
+      const m=birds.filter(matches);
+      res.innerHTML=m.length
+        ? "<h2>Matches ("+m.length+")</h2>"+m.map(x=>
+          `<div class="result">🕊️ <b>${x.name||"Unknown"}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
+        ).join("")
+        : "<p>No matches.</p>";
+    }
+    function resetAll(){
+      leftSel.clear();rightSel.clear();res.innerHTML="";
+      document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
+    }
+    document.getElementById("resetBtn").onclick=resetAll;
+    makeButtons("R",document.getElementById("rightButtons"));
+    makeButtons("L",document.getElementById("leftButtons"));
 
-function filter(){
-  if(!birds.length)return;
-  const m=birds.filter(matches);
-  res.innerHTML=m.length
-    ? "<h2>Matches ("+m.length+")</h2>"+m.map(x=>
-      `<div class="result">🕊️ <b>${x.name}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
-    ).join("")
-    : "<p>No matches.</p>";
-}
+    // --- Fetch CSV from GitHub Pages ---
+    const username = "wdomi";  
+    const repo = "dipper_finder";
+    const csvPath = `https://${username}.github.io/${repo}/view_birdsCSV_apps.csv`;
 
-function resetAll(){
-  leftSel.clear();rightSel.clear();res.innerHTML="";
-  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
-}
-document.getElementById("resetBtn").onclick=resetAll;
-
-makeButtons("R",document.getElementById("rightButtons"));
-makeButtons("L",document.getElementById("leftButtons"));
-
-// --- Auto-load CSV file (works locally + on GitHub Pages) ---
-const basePath = window.location.pathname.replace(/\/[^/]*$/, '/');
-fetch(basePath + 'view_birdsCSV_apps.csv')
-  .then(r=>{
-    if(!r.ok) throw new Error("Could not load CSV");
-    return r.text();
-  })
-  .then(text=>{
-    birds=parseCSV(text);
-    filter();
-  })
-  .catch(err=>{
-    res.innerHTML="<p style='color:red'>⚠️ Failed to load CSV: "+err.message+"</p>";
-  });
-</script>
+    fetch(csvPath)
+      .then(r => {
+        if (!r.ok) throw new Error("Could not load CSV (" + r.status + ")");
+        return r.text();
+      })
+      .then(text => {
+        birds = parseCSV(text);
+        filter();
+      })
+      .catch(err => {
+        res.innerHTML = "<p style='color:red'>⚠️ Failed to load CSV: " + err.message + "</p>";
+      });
+  </script>
 </body>
 </html>
