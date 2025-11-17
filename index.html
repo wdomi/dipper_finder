@@ -32,7 +32,7 @@
     }
     button.color.selected { outline: 3px solid #000; }
 
-    /* Individual button colors */
+    /* Button color styles */
     .alu { background: gray; }
     .red { background: red; }
     .yellow { background: goldenrod; color: black; }
@@ -40,21 +40,13 @@
     .blue { background: steelblue; }
     .black { background: black; }
     .white {
-      background: white;
-      color: black;           /* ensures text is visible */
-      border: 1px solid #999;/* visible border */
+      background: white !important;
+      color: black !important;
+      border: 2px solid black !important;
       font-weight: bold;
     }
     .violet { background: purple; }
     .pink { background: hotpink; color: black; }
-
-    /* Enforce white button appearance */
-    button.color.white {
-      background: white !important;
-      color: black !important;
-      border: 1px solid #999 !important;
-      font-weight: bold;
-    }
 
     .bird-img {
       width: 35px;
@@ -110,7 +102,7 @@
       "green": {name: "green", color: "green", bg: "transparent"},
       "blue": {name: "blue", color: "steelblue", bg: "transparent"},
       "black": {name: "black", color: "black", bg: "transparent"},
-      "white": {name: "white", color: "black", bg: "#eee"}, // visible on white background
+      "white": {name: "white", color: "black", bg: "white"},
       "violet": {name: "violet", color: "purple", bg: "transparent"},
       "pink": {name: "pink", color: "hotpink", bg: "transparent"}
     };
@@ -149,7 +141,9 @@
       const gi=h=>headers.indexOf(h);
 
       const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
-            iName=gi("name"), iID=gi("bird_id"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)"),
+            iName=gi("name"), iID=gi("bird_id"),
+            iTerr=gi("territory"), iTName=gi("territory_name"),
+            iDist=gi("dist punt dal gal (m)"),
             iSex=gi("sex"), iAge=gi("age"), iRinged=gi("banded_on");
 
       return lines.slice(1).map(row=>{
@@ -157,14 +151,16 @@
         row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
           cols.push(x.replace(/^"|"$/g,'').trim());
         });
+
         return {
           Rt:(cols[iRt]||"").toLowerCase(),
           Rb:(cols[iRb]||"").toLowerCase(),
           Lt:(cols[iLt]||"").toLowerCase(),
           Lb:(cols[iLb]||"").toLowerCase(),
-          name:(cols[iName]||"").replace(/null/i,""),
-          id:(cols[iID]||"").replace(/null/i,""),
+          name:(cols[iName]||""),
+          id:(cols[iID]||""),
           terr:(cols[iTerr]||""),
+          terrname:(cols[iTName]||""),
           dist:(cols[iDist]||""),
           sex:(cols[iSex]||""),
           age:(cols[iAge]||""),
@@ -177,7 +173,8 @@
       const leftOk=[b.Lt,b.Lb].filter(Boolean);
       const rightOk=[b.Rt,b.Rb].filter(Boolean);
       const L=[...leftSel],R=[...rightSel];
-      return (!L.length||L.every(x=>leftOk.includes(x))) && (!R.length||R.every(x=>rightOk.includes(x)));
+      return (!L.length||L.every(x=>leftOk.includes(x))) &&
+             (!R.length||R.every(x=>rightOk.includes(x)));
     }
 
     function colorSpan(code){
@@ -185,7 +182,7 @@
       if(!code) return "";
       const c = colorMap[code];
       if(!c) return code;
-      return `<span style="color:${c.color}; background:${c.bg}; font-weight:bold; padding:0 2px;">${c.name}</span>`;
+      return `<span style="color:${c.color}; padding:0 2px; font-weight:bold;">${c.name}</span>`;
     }
 
     function filter(){
@@ -202,13 +199,13 @@
           '</tr></thead><tbody>';
 
         m.forEach(x => {
-          const sexAge = x.sex && x.age ? `${x.sex}/${x.age} ${x.ringed}` : "";
+          const sa = `${x.sex}/${x.age} ${x.ringed||""}`.trim();
           html += '<tr>'+
-            `<td>${x.name || "Unknown"}</td>`+
-            `<td>${sexAge}</td>`+
-            `<td>${x.terr} (${x.dist || ""} m)</td>`+
+            `<td>${x.name} (${x.id})</td>`+
+            `<td>${sa}</td>`+
+            `<td>${x.terr} ${x.terrname} (${x.dist} m)</td>`+
             `<td>${colorSpan(x.Rt)}/${colorSpan(x.Rb)} - ${colorSpan(x.Lt)}/${colorSpan(x.Lb)}</td>`+
-            '</tr>';
+          '</tr>';
         });
 
         html += '</tbody></table>';
