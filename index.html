@@ -51,7 +51,7 @@
   </style>
 </head>
 <body>
-  <h1>🕊️ Dipper Finder</h1>
+  <h1><img src="Johann.png" class="bird-img" alt="Johann" /> Dipper Finder</h1>
   <div class="section">
     <h2>Right Leg</h2>
     <div id="rightButtons"></div>
@@ -124,7 +124,7 @@
       const m=birds.filter(matches);
       res.innerHTML=m.length
         ? "<h2>Matches ("+m.length+")</h2>"+m.map(x=>
-          `<div class="result">🕊️ <b>${x.name||"Unknown"}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
+          `<div class="result"><img src="Johann.png" class="bird-img" alt="Johann" /> <b>${x.name||"Unknown"}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
         ).join("")
         : "<p>No matches.</p>";
     }
