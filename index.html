@@ -149,7 +149,7 @@
       const gi=h=>headers.indexOf(h);
 
       const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
-            iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)"),
+            iName=gi("name"), iID=gi("bird_id"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)"),
             iSex=gi("sex"), iAge=gi("age"), iRinged=gi("banded_on");
 
       return lines.slice(1).map(row=>{
@@ -163,6 +163,7 @@
           Lt:(cols[iLt]||"").toLowerCase(),
           Lb:(cols[iLb]||"").toLowerCase(),
           name:(cols[iName]||"").replace(/null/i,""),
+          id:(cols[iID]||"").replace(/null/i,""),
           terr:(cols[iTerr]||""),
           dist:(cols[iDist]||""),
           sex:(cols[iSex]||""),
@@ -194,7 +195,7 @@
       if(m.length) {
         let html = '<table>';
         html += '<thead><tr>'+
-          '<th>Name</th>'+
+          '<th>Name (id)</th>'+
           '<th>Sex/Age ringed</th>'+
           '<th>Territory (Dist PdG)</th>'+
           '<th>R↑/R↓ - L↑/L↓</th>'+
