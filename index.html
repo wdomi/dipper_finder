@@ -32,7 +32,6 @@
     }
     button.color.selected { outline: 3px solid #000; }
 
-    /* Individual button colors */
     .alu { background: gray; }
     .red { background: red; }
     .yellow { background: goldenrod; color: black; }
@@ -41,36 +40,25 @@
     .black { background: black; }
     .white {
       background: white;
-      color: black;           /* ensures text is visible */
-      border: 1px solid #999;/* border makes button visible */
+      color: black;
+      border: 1px solid #999;
       font-weight: bold;
     }
     .violet { background: purple; }
     .pink { background: hotpink; color: black; }
 
-
-	button.color.white {
-  		background: white !important;
-  		color: black !important;       /* ensures text is visible */
-  		border: 1px solid #999;        /* visible border */
-  		font-weight: bold;
-	}
-
-
     .bird-img {
-      width: 40px;
-      height: 40px;
+      width: 35px;
+      height: 35px;
       vertical-align: middle;
       object-fit: contain;
     }
-
 
     #results {
       text-align: left;
       margin-top: 10px;
     }
 
-    /* Table styling */
     #results table {
       width: 100%;
       border-collapse: collapse;
@@ -113,7 +101,7 @@
       "green": {name: "green", color: "green", bg: "transparent"},
       "blue": {name: "blue", color: "steelblue", bg: "transparent"},
       "black": {name: "black", color: "black", bg: "transparent"},
-      "white": {name: "white", color: "black", bg: "#eee"}, // visible on white background
+      "white": {name: "white", color: "black", bg: "#eee"},
       "violet": {name: "violet", color: "purple", bg: "transparent"},
       "pink": {name: "pink", color: "hotpink", bg: "transparent"}
     };
@@ -152,7 +140,8 @@
       const gi=h=>headers.indexOf(h);
 
       const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
-            iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)");
+            iName=gi("name"), iTerr=gi("territory"), iDist=gi("dist punt dal gal (m)"),
+            iSex=gi("sex"), iAge=gi("age"), iRinged=gi("ringed");
 
       return lines.slice(1).map(row=>{
         const cols = [];
@@ -166,7 +155,10 @@
           Lb:(cols[iLb]||"").toLowerCase(),
           name:(cols[iName]||"").replace(/null/i,""),
           terr:(cols[iTerr]||""),
-          dist:(cols[iDist]||"")
+          dist:(cols[iDist]||""),
+          sex:(cols[iSex]||""),
+          age:(cols[iAge]||""),
+          ringed:(cols[iRinged]||"")
         };
       });
     }
@@ -182,7 +174,7 @@
       code = short(code);
       if(!code) return "";
       const c = colorMap[code];
-      if(!c) return code; // fallback for unknown colors
+      if(!c) return code;
       return `<span style="color:${c.color}; background:${c.bg}; font-weight:bold; padding:0 2px;">${c.name}</span>`;
     }
 
@@ -194,13 +186,16 @@
         let html = '<table>';
         html += '<thead><tr>'+
           '<th>Name</th>'+
+          '<th>Sex/Age ringed</th>'+
           '<th>Territory (Dist PdG)</th>'+
           '<th>R↑/R↓ - L↑/L↓</th>'+
           '</tr></thead><tbody>';
 
         m.forEach(x => {
+          const sexAge = x.sex && x.age ? `${x.sex}/${x.age} ${x.ringed}` : "";
           html += '<tr>'+
             `<td>${x.name || "Unknown"}</td>`+
+            `<td>${sexAge}</td>`+
             `<td>${x.terr} (${x.dist || ""} m)</td>`+
             `<td>${colorSpan(x.Rt)}/${colorSpan(x.Rb)} - ${colorSpan(x.Lt)}/${colorSpan(x.Lb)}</td>`+
             '</tr>';
@@ -222,7 +217,6 @@
     makeButtons("R",document.getElementById("rightButtons"));
     makeButtons("L",document.getElementById("leftButtons"));
 
-    // Fetch CSV
     const username = "wdomi"; 
     const repo = "dipper_finder";
     const csvPath = `https://${username}.github.io/${repo}/view_birdsCSV_apps.csv`;
