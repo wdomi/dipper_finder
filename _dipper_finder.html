@@ -75,7 +75,7 @@ function filter(){
   const m=birds.filter(matches);
   res.innerHTML=m.length
     ? "<h2>Matches ("+m.length+")</h2>"+m.map(x=>
-      `<div class="result">🕊️ <b>${x.name}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
+      `<div class="result"><img src="Johann.png" class="bird-img" alt="Johann" /> <b>${x.name}</b> — ${x.terr} | R: ${short(x.Rt)}/${short(x.Rb)}  L: ${short(x.Lt)}/${short(x.Lb)} | Dist: ${x.dist} m</div>`
     ).join("")
     : "<p>No matches.</p>";
 }
