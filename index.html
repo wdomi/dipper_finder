@@ -32,6 +32,7 @@
     }
     button.color.selected { outline: 3px solid #000; }
 
+    /* Individual button colors */
     .alu { background: gray; }
     .red { background: red; }
     .yellow { background: goldenrod; color: black; }
@@ -40,12 +41,20 @@
     .black { background: black; }
     .white {
       background: white;
-      color: black;
-      border: 1px solid #999;
+      color: black;           /* ensures text is visible */
+      border: 1px solid #999;/* visible border */
       font-weight: bold;
     }
     .violet { background: purple; }
     .pink { background: hotpink; color: black; }
+
+    /* Enforce white button appearance */
+    button.color.white {
+      background: white !important;
+      color: black !important;
+      border: 1px solid #999 !important;
+      font-weight: bold;
+    }
 
     .bird-img {
       width: 35px;
@@ -101,7 +110,7 @@
       "green": {name: "green", color: "green", bg: "transparent"},
       "blue": {name: "blue", color: "steelblue", bg: "transparent"},
       "black": {name: "black", color: "black", bg: "transparent"},
-      "white": {name: "white", color: "black", bg: "#eee"},
+      "white": {name: "white", color: "black", bg: "#eee"}, // visible on white background
       "violet": {name: "violet", color: "purple", bg: "transparent"},
       "pink": {name: "pink", color: "hotpink", bg: "transparent"}
     };
