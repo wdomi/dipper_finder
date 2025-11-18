@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Dipper Finder</title>
-  <style> 
+  <style>
     body {
       font-family: system-ui, sans-serif;
       margin: 20px;
@@ -19,8 +19,10 @@
       background: white;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 800px;
     }
+
+    /* color buttons */
     button.color {
       border: none;
       margin: 3px;
@@ -32,215 +34,392 @@
     }
     button.color.selected { outline: 3px solid #000; }
 
-    /* Button color styles */
     .alu { background: gray; }
     .red { background: red; }
     .yellow { background: goldenrod; color: black; }
     .green { background: green; }
     .blue { background: steelblue; }
     .black { background: black; }
-    .white {
+
+    /* explicit, high-specificity white button rule so it's always visible */
+    button.color.white {
       background: white !important;
       color: black !important;
-      border: 2px solid black !important;
+      border: 1px solid #999;
       font-weight: bold;
     }
+
     .violet { background: purple; }
     .pink { background: hotpink; color: black; }
 
-    .bird-img {
-      width: 35px;
-      height: 35px;
-      vertical-align: middle;
-      object-fit: contain;
-    }
+    .bird-img { width: 40px; height: 40px; vertical-align: middle; object-fit: contain; }
 
-    #results {
-      text-align: left;
-      margin-top: 10px;
-    }
+    #results { text-align: left; margin-top: 10px; }
 
-    #results table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
+    #results table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     #results th, #results td {
       border-bottom: 1px solid #ccc;
       text-align: left;
-      padding: 4px 8px;
+      padding: 6px 8px;
+      vertical-align: middle;
     }
-    #results th {
-      background: #eef;
+    #results th { background: #eef; }
+
+    .action-btn {
+      padding: 6px 10px;
+      margin-right: 6px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: #2a4d69;
+      color: white;
     }
+    .action-btn.maybe { background: #777; }
+
+    .small-muted { color: #666; font-size: 0.9rem; }
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      background: rgba(0,0,0,0.85);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      display: none;
+      z-index: 9999;
+    }
+    .visible { display: block; }
   </style>
-  <link rel="icon" type="image/png" href="favicon.png">
 </head>
 <body>
   <h1><img src="Johann.png" class="bird-img" alt="icon" /> Dipper Finder</h1>
-  
+
   <div class="section">
     <h2>Right Leg</h2>
     <div id="rightButtons"></div>
   </div>
-  
+
   <div class="section">
     <h2>Left Leg</h2>
     <div id="leftButtons"></div>
   </div>
-  
-  <div>
+
+  <div style="margin:8px 0;">
     <button id="resetBtn">Reset</button>
+    <span class="small-muted"> — select up to 2 colors per leg</span>
   </div>
-  
-  <div id="results">Automatically loading <b>view_birdsCSV_apps.csv</b>...</div>
 
-  <script>
-    const colorMap = {
-      "alu": {name: "alu", color: "gray", bg: "transparent"},
-      "red": {name: "red", color: "red", bg: "transparent"},
-      "yellow": {name: "yellow", color: "goldenrod", bg: "transparent"},
-      "green": {name: "green", color: "green", bg: "transparent"},
-      "blue": {name: "blue", color: "steelblue", bg: "transparent"},
-      "black": {name: "black", color: "black", bg: "transparent"},
-      "white": {name: "white", color: "black", bg: "white"},
-      "violet": {name: "violet", color: "purple", bg: "transparent"},
-      "pink": {name: "pink", color: "hotpink", bg: "transparent"}
+  <div id="results">Loading <b>view_birdsCSV_apps.csv</b>...</div>
+
+  <div id="toast" class="toast"></div>
+
+<script>
+/* ========== CONFIG ========== */
+/* Baserow: table endpoint and create-only token (table 742957) */
+const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
+/* CREATE-ONLY token you provided (safe for frontend writes) */
+const BASEROW_TOKEN = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
+
+/* Color mapping for display */
+const colorMap = {
+  "alu": {name:"alu", color:"gray", bg:"transparent"},
+  "red": {name:"red", color:"red", bg:"transparent"},
+  "yellow": {name:"yellow", color:"goldenrod", bg:"transparent"},
+  "green": {name:"green", color:"green", bg:"transparent"},
+  "blue": {name:"blue", color:"steelblue", bg:"transparent"},
+  "black": {name:"black", color:"black", bg:"transparent"},
+  "white": {name:"white", color:"black", bg:"#eee"},
+  "violet": {name:"violet", color:"purple", bg:"transparent"},
+  "pink": {name:"pink", color:"hotpink", bg:"transparent"}
+};
+
+const colors = ["alu","red","yellow","green","blue","black","white","violet","pink"];
+const leftSel = new Set();
+const rightSel = new Set();
+
+let birds = []; // parsed CSV
+const res = document.getElementById("results");
+const toast = document.getElementById("toast");
+
+function showToast(msg, timeout=3000){
+  toast.textContent = msg;
+  toast.classList.add("visible");
+  setTimeout(()=> toast.classList.remove("visible"), timeout);
+}
+
+/* convert any CSV color token to our keys (metal -> alu etc) */
+function short(c){
+  if(!c) return "";
+  c = c.toLowerCase();
+  if(c === "metal") return "alu";
+  // some CSV values might be like 'blu' or 'blu.'; keep simple
+  return c;
+}
+
+function colorSpan(code){
+  code = short(code);
+  if(!code) return "";
+  const c = colorMap[code];
+  if(!c) return escapeHtml(code);
+  return `<span style="color:${c.color}; background:${c.bg}; font-weight:600; padding:0 4px; border-radius:3px;">${escapeHtml(c.name)}</span>`;
+}
+
+/* Escape text for HTML injection safety */
+function escapeHtml(s){
+  if(s == null) return "";
+  return String(s)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+/* ========== BUTTONS: create color selector buttons ========== */
+function makeButtons(side, container){
+  colors.forEach(c=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = c;
+    b.className = "color " + c;
+    b.addEventListener("click", ()=>{
+      toggleSelect(side, c, b);
+      renderTable(); // re-render results immediately
+    });
+    container.appendChild(b);
+  });
+}
+
+function toggleSelect(side, color, btn){
+  const set = side === "L" ? leftSel : rightSel;
+  if(set.has(color)){
+    set.delete(color);
+    btn.classList.remove("selected");
+  } else if(set.size < 2){
+    set.add(color);
+    btn.classList.add("selected");
+  } else {
+    alert("Max 2 colors per leg");
+  }
+}
+
+/* ========== CSV parsing ========== */
+/* This parser is robust for quoted fields */
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  if(!lines.length) return [];
+
+  const headers = lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const gi = key => headers.indexOf(key);
+
+  // expected header names (lowercased)
+  const i_bird_id = gi("bird_id");
+  const i_mark_color = gi("mark_color");
+  const i_rt = gi("r_top") >= 0 ? gi("r_top") : gi("r_top".toLowerCase()); // robust
+  const i_rb = gi("r_bottom");
+  const i_lt = gi("l_top");
+  const i_lb = gi("l_bottom");
+  const i_territory = gi("territory");
+  const i_territory_name = gi("territory_name");
+  const i_name = gi("name");
+  const i_sex = gi("sex");
+  const i_age = gi("age");
+  const i_dist = gi("dist punt dal gal (m)"); // exact as you showed
+  const i_banded_on = gi("banded_on");
+
+  return lines.slice(1).map(row=>{
+    // split respecting quoted commas
+    const cols = [];
+    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
+      cols.push(x.replace(/^"|"$/g,'').trim());
+    });
+
+    return {
+      bird_id: cols[i_bird_id] || "",
+      mark_color: cols[i_mark_color] || "",
+      Rt: (cols[i_rt]||"").toLowerCase(),
+      Rb: (cols[i_rb]||"").toLowerCase(),
+      Lt: (cols[i_lt]||"").toLowerCase(),
+      Lb: (cols[i_lb]||"").toLowerCase(),
+      territory: cols[i_territory] || cols[i_territory_name] || "",
+      name: cols[i_name] || "",
+      sex: cols[i_sex] || "",
+      age: cols[i_age] || "",
+      dist: cols[i_dist] || "",
+      banded_on: cols[i_banded_on] || ""
     };
+  });
+}
 
-    const colors=["alu","red","yellow","green","blue","black","white","violet","pink"];
-    const leftSel=new Set(), rightSel=new Set();
-    let birds=[];
-    const res=document.getElementById("results");
+/* ========== FILTERING ========== */
+function matches(b){
+  const leftOk = [b.Lt, b.Lb].filter(Boolean);
+  const rightOk = [b.Rt, b.Rb].filter(Boolean);
+  const L = [...leftSel], R = [...rightSel];
 
-    function short(c){
-      if(!c) return "";
-      c = c.toLowerCase();
-      return c === "metal" ? "alu" : c;
+  return (!L.length || L.every(x=> leftOk.includes(x))) &&
+         (!R.length || R.every(x=> rightOk.includes(x)));
+}
+
+/* ========== BASEROW LOGGING ========== */
+/* POST payload uses user_field_names=true field names:
+   bird_name, bird_id, action, latitude, longitude
+*/
+async function logBirdToBaserow(rowData, action){
+  // get position (graceful fallback to nulls)
+  const getPos = () => new Promise(resolve => {
+    if(!navigator.geolocation) return resolve({lat:null, lon:null});
+    const opts = { enableHighAccuracy: false, timeout: 8000, maximumAge: 0 };
+    navigator.geolocation.getCurrentPosition(
+      p => resolve({lat: Number(p.coords.latitude.toFixed(10)), lon: Number(p.coords.longitude.toFixed(10))}),
+      e => resolve({lat:null, lon:null}),
+      opts
+    );
+  });
+
+  showToast("Saving...");
+  const gps = await getPos();
+
+  const payload = {
+    bird_name: rowData.name || rowData.bird_id || "",
+    bird_id: rowData.bird_id || "",
+    action: action, // "sighted" or "maybe"
+    latitude: gps.lat,
+    longitude: gps.lon
+  };
+
+  try {
+    const resp = await fetch(BASEROW_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Authorization": `Token ${BASEROW_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if(!resp.ok){
+      const text = await resp.text().catch(()=>"");
+      console.error("Baserow error", resp.status, text);
+      showToast("Failed to save (see console).");
+    } else {
+      showToast("Saved ✓");
     }
+  } catch(err){
+    console.error("Network error saving to Baserow", err);
+    showToast("Network error (see console).");
+  }
+}
 
-    function makeButtons(side,container){
-      colors.forEach(c=>{
-        const b=document.createElement("button");
-        b.textContent=c;
-        b.className="color "+c;
-        b.onclick=()=>{toggleSelect(side,c,b);filter();};
-        container.appendChild(b);
-      });
-    }
+/* ========== RENDER / TABLE ========== */
+function renderTable(){
+  // if CSV not loaded yet
+  if(!birds.length){
+    res.innerHTML = "No data loaded.";
+    return;
+  }
 
-    function toggleSelect(side,color,btn){
-      const set=side==="L"?leftSel:rightSel;
-      if(set.has(color)){set.delete(color); btn.classList.remove("selected");}
-      else if(set.size<2){set.add(color); btn.classList.add("selected");}
-      else{alert("Max 2 colors per leg");}
-    }
+  const matched = birds.filter(matches);
 
-    function parseCSV(text){
-      const lines=text.trim().split(/\r?\n/);
-      const headers=lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
-      const gi=h=>headers.indexOf(h);
+  if(!matched.length){
+    res.innerHTML = "<p>No matches.</p>";
+    return;
+  }
 
-      const iRt=gi("r_top"), iRb=gi("r_bottom"), iLt=gi("l_top"), iLb=gi("l_bottom"),
-            iName=gi("name"), iID=gi("bird_id"),
-            iTerr=gi("territory"), iTName=gi("territory_name"),
-            iDist=gi("dist punt dal gal (m)"),
-            iSex=gi("sex"), iAge=gi("age"), iRinged=gi("banded_on");
+  // Build table with DOM (safer than innerHTML for rows with listeners)
+  const table = document.createElement("table");
+  const thead = document.createElement("thead");
+  const thr = document.createElement("tr");
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/R↓ - L↑/L↓","Actions"].forEach(h => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    thr.appendChild(th);
+  });
+  thead.appendChild(thr);
+  table.appendChild(thead);
 
-      return lines.slice(1).map(row=>{
-        const cols = [];
-        row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
-          cols.push(x.replace(/^"|"$/g,'').trim());
-        });
+  const tbody = document.createElement("tbody");
 
-        return {
-          Rt:(cols[iRt]||"").toLowerCase(),
-          Rb:(cols[iRb]||"").toLowerCase(),
-          Lt:(cols[iLt]||"").toLowerCase(),
-          Lb:(cols[iLb]||"").toLowerCase(),
-          name:(cols[iName]||""),
-          id:(cols[iID]||""),
-          terr:(cols[iTerr]||""),
-          terrname:(cols[iTName]||""),
-          dist:(cols[iDist]||""),
-          sex:(cols[iSex]||""),
-          age:(cols[iAge]||""),
-          ringed:(cols[iRinged]||"")
-        };
-      });
-    }
+  matched.forEach(row => {
+    const tr = document.createElement("tr");
 
-    function matches(b){
-      const leftOk=[b.Lt,b.Lb].filter(Boolean);
-      const rightOk=[b.Rt,b.Rb].filter(Boolean);
-      const L=[...leftSel],R=[...rightSel];
-      return (!L.length||L.every(x=>leftOk.includes(x))) &&
-             (!R.length||R.every(x=>rightOk.includes(x)));
-    }
+    // Name (bird_id)
+    const tdName = document.createElement("td");
+    tdName.innerHTML = `${escapeHtml(row.name)} <span class="small-muted">(${escapeHtml(row.bird_id)})</span>`;
+    tr.appendChild(tdName);
 
-    function colorSpan(code){
-      code = short(code);
-      if(!code) return "";
-      const c = colorMap[code];
-      if(!c) return code;
-      return `<span style="color:${c.color}; padding:0 2px; font-weight:bold;">${c.name}</span>`;
-    }
+    // Sex / Age (Banded)
+    const tdSex = document.createElement("td");
+    tdSex.textContent = `${row.sex || ""}${row.age ? " / "+row.age : ""}${row.banded_on ? " ("+row.banded_on+")" : ""}`;
+    tr.appendChild(tdSex);
 
-    function filter(){
-      if(!birds.length) return;
-      const m = birds.filter(matches);
+    // Territory (dist)
+    const tdTerr = document.createElement("td");
+    tdTerr.textContent = `${row.territory || ""} ${row.dist ? "(" + row.dist + " m)" : ""}`;
+    tr.appendChild(tdTerr);
 
-      if(m.length) {
-        let html = '<table>';
-        html += '<thead><tr>'+
-          '<th>Name (id)</th>'+
-          '<th>Sex/Age ringed</th>'+
-          '<th>Territory (Dist PdG)</th>'+
-          '<th>R↑/R↓ - L↑/L↓</th>'+
-          '</tr></thead><tbody>';
+    // Colors column
+    const tdColors = document.createElement("td");
+    tdColors.innerHTML = `${colorSpan(row.Rt)}/${colorSpan(row.Rb)} - ${colorSpan(row.Lt)}/${colorSpan(row.Lb)}`;
+    tr.appendChild(tdColors);
 
-        m.forEach(x => {
-          const sa = `${x.sex}/${x.age} ${x.ringed||""}`.trim();
-          html += '<tr>'+
-            `<td>${x.name} (${x.id})</td>`+
-            `<td>${sa}</td>`+
-            `<td>${x.terr} ${x.terrname} (${x.dist} m)</td>`+
-            `<td>${colorSpan(x.Rt)}/${colorSpan(x.Rb)} - ${colorSpan(x.Lt)}/${colorSpan(x.Lb)}</td>`+
-          '</tr>';
-        });
+    // Actions (Sighted / Maybe)
+    const tdAct = document.createElement("td");
 
-        html += '</tbody></table>';
-        res.innerHTML = html;
-      } else {
-        res.innerHTML = "<p>No matches.</p>";
-      }
-    }
+    const btnSight = document.createElement("button");
+    btnSight.type = "button";
+    btnSight.className = "action-btn";
+    btnSight.textContent = "Sighted";
+    btnSight.addEventListener("click", () => logBirdToBaserow(row, "sighted"));
 
-    function resetAll(){
-      leftSel.clear(); rightSel.clear(); res.innerHTML="";
-      document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
-    }
+    const btnMaybe = document.createElement("button");
+    btnMaybe.type = "button";
+    btnMaybe.className = "action-btn maybe";
+    btnMaybe.textContent = "Maybe";
+    btnMaybe.addEventListener("click", () => logBirdToBaserow(row, "maybe"));
 
-    document.getElementById("resetBtn").onclick=resetAll;
-    makeButtons("R",document.getElementById("rightButtons"));
-    makeButtons("L",document.getElementById("leftButtons"));
+    tdAct.appendChild(btnSight);
+    tdAct.appendChild(btnMaybe);
+    tr.appendChild(tdAct);
 
-    const username = "wdomi"; 
-    const repo = "dipper_finder";
-    const csvPath = `https://${username}.github.io/${repo}/view_birdsCSV_apps.csv`;
+    tbody.appendChild(tr);
+  });
 
-    fetch(csvPath)
-      .then(r => {
-        if (!r.ok) throw new Error("Could not load CSV (" + r.status + ")");
-        return r.text();
-      })
-      .then(text => {
-        birds = parseCSV(text);
-        filter();
-      })
-      .catch(err => {
-        res.innerHTML = "<p style='color:red'>⚠️ Failed to load CSV: " + err.message + "</p>";
-      });
-  </script>
+  table.appendChild(tbody);
+  // replace results
+  res.innerHTML = "";
+  res.appendChild(table);
+}
+
+/* ========== Reset ========== */
+function resetAll(){
+  leftSel.clear();
+  rightSel.clear();
+  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
+  renderTable();
+}
+
+/* ========== INIT ========== */
+document.getElementById("resetBtn").addEventListener("click", resetAll);
+makeButtons("R", document.getElementById("rightButtons"));
+makeButtons("L", document.getElementById("leftButtons"));
+
+/* load CSV (your GitHub Pages file) */
+const csvPath = "https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
+fetch(csvPath)
+  .then(r => {
+    if(!r.ok) throw new Error("Failed to fetch CSV: " + r.status);
+    return r.text();
+  })
+  .then(txt => {
+    birds = parseCSV(txt);
+    renderTable();
+  })
+  .catch(err => {
+    console.error(err);
+    res.innerHTML = `<p style="color:red">⚠️ Failed to load CSV: ${escapeHtml(err && err.message ? err.message : String(err))}</p>`;
+  });
+
+</script>
 </body>
 </html>
