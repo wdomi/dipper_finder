@@ -229,44 +229,102 @@ function renderFilteredTable(){
 
 /* ================= Geolocation ================= */
 async function requestLocation(){
-  if(!navigator.geolocation){ alert("Geolocation not supported"); return {lat:null,lon:null}; }
+  if(!navigator.geolocation) return {lat:null, lon:null};
   return new Promise(resolve=>{
     navigator.geolocation.getCurrentPosition(
-      pos=>resolve({lat:Number(pos.coords.latitude.toFixed(10)),lon:Number(pos.coords.longitude.toFixed(10))}),
-      err=>{
-        if(err.code===1) showToast("Location denied; enable it in Settings for accurate coordinates");
-        else if(err.code===2) showToast("Location unavailable; coordinates will be empty");
-        else if(err.code===3) showToast("Location timeout; coordinates will be empty");
-        resolve({lat:null,lon:null});
-      }, {timeout:8000}
+      pos => resolve({lat:Number(pos.coords.latitude.toFixed(10)), lon:Number(pos.coords.longitude.toFixed(10))}),
+      err => {
+        console.warn("Geolocation error:", err);
+        alert("Cannot get location. Coordinates will be empty.");
+        resolve({lat:null, lon:null});
+      },
+      { timeout: 8000 }
     );
   });
 }
 
+
 /* ================= Submit sightings ================= */
-document.getElementById("submitBtn").addEventListener("click", async ()=>{
-  const entries=[];
-  for(const [bird_id,val] of perBirdSelection.entries()){
-    if(val==="sighted"||val==="maybe"){
-      const r=birds.find(b=>b.bird_id===bird_id); if(!r) continue;
-      entries.push({row:r,action:val});
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const entries = [];
+  for (const [bird_id, val] of perBirdSelection.entries()) {
+    if (val === "sighted" || val === "maybe") {
+      const r = birds.find(b => b.bird_id === bird_id);
+      if (!r) continue;
+      entries.push({ row: r, action: val });
     }
   }
-  if(entries.length===0){ alert("No selected birds to submit."); return; }
-  showToast("Getting location...");
-  const gps=await requestLocation();
-  showToast("Submitting sightings...");
-  let successCount=0;
-  for(const e of entries){
-    const payload={ bird_name:e.row.name||"", bird_id:e.row.bird_id||"", action:(e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS.maybe), latitude:gps.lat, longitude:gps.lon };
-    try{
-      const r=await fetch(BASEROW_ENDPOINT,{method:"POST",headers:{"Authorization":"Token "+BASEROW_TOKEN,"Content-Type":"application/json"},body:JSON.stringify(payload)});
-      if(r.ok) successCount++; else { const txt=await r.text().catch(()=> ""); console.error("Baserow save error", r.status, txt); }
-    }catch(err){ console.error("Network error posting to Baserow", err); }
+  if (entries.length === 0) {
+    alert("No selected birds to submit.");
+    return;
   }
+
+  showToast("Getting location...");
+  // Always returns an object with lat/lon, even if denied
+  const gps = await requestLocation();
+
+  showToast("Submitting sightings...");
+  let successCount = 0;
+
+  for (const e of entries) {
+    const payload = {
+      bird_name: e.row.name || "",
+      bird_id: e.row.bird_id || "",
+      action: e.action === "sighted" ? ACTION_IDS.sighted : ACTION_IDS.maybe,
+      latitude: gps.lat,   // will be null if denied
+      longitude: gps.lon
+    };
+
+    console.log("Submitting payload:", payload); // <-- this will show what is being sent
+
+    try {
+      const r = await fetch(BASEROW_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Authorization": "Token " + BASEROW_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (r.ok) successCount++;
+      else {
+        const txt = await r.text().catch(() => "");
+        console.error("Baserow save error", r.status, txt);
+      }
+    } catch (err) {
+      console.error("Network error posting to Baserow", err);
+    }
+  }
+
   showToast(`Submitted ${successCount}/${entries.length}`);
-  perBirdSelection.clear(); renderFilteredTable();
+  perBirdSelection.clear();
+  renderFilteredTable();
 });
+
+/* ================= Geolocation helper ================= */
+async function requestLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported. Coordinates will be empty.");
+    return { lat: null, lon: null };
+  }
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({
+        lat: Number(pos.coords.latitude.toFixed(10)),
+        lon: Number(pos.coords.longitude.toFixed(10))
+      }),
+      err => {
+        console.warn("Geolocation error:", err);
+        alert("Cannot get location. Coordinates will be empty.");
+        resolve({ lat: null, lon: null });
+      },
+      { timeout: 8000 }
+    );
+  });
+}
+
+  
 
 /* ================= Fetch CSV ================= */
 fetch(CSV_URL)
