@@ -26,15 +26,14 @@
     margin-bottom:6px;
   }
   h1{
-    font-size:20px;
+    font-size:24px;
     margin:0;
     display:flex;
     align-items:center;
     gap:8px;
   }
-  .bird-img{ width:36px; height:36px; object-fit:contain; }
+  .bird-img{ width:48px; height:48px; object-fit:contain; }
 
-  /* Reset button under title */
   .top-actions{ display:flex; gap:12px; align-items:center; }
   .reset-btn{
     background:#e6e6e6;
@@ -45,7 +44,6 @@
     font-size:14px;
   }
 
-  /* Color selector sections (reduced whitespace) */
   .section{
     background:white;
     border-radius:10px;
@@ -69,14 +67,12 @@
     cursor:pointer;
     color:white;
   }
-  /* individual colors */
   .alu{ background:gray; }
   .red{ background:red; }
   .yellow{ background:goldenrod; color:black; }
   .green{ background:green; }
   .blue{ background:steelblue; }
   .black{ background:black; }
-  /* ensure white visible */
   button.color.white{
     background:white !important;
     color:black !important;
@@ -88,7 +84,6 @@
 
   button.color.selected{ outline:3px solid #000; }
 
-  /* Submit button - left aligned */
   .submit-area{ margin-top:6px; }
   .submit-btn{
     background:var(--accent);
@@ -99,17 +94,15 @@
     cursor:pointer;
     font-size:15px;
     text-align:left;
-    display:block; /* so left aligned */
+    display:block;
   }
 
-  /* Results / Table */
   #results{ margin-top:10px; text-align:left; }
   table{ width:100%; border-collapse:collapse; font-size:14px; }
   th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
   th{ background:#f0f6fa; text-align:left; font-weight:600; }
   .small-muted{ color:var(--muted); font-size:12px; }
 
-  /* action toggles */
   .action-group{ display:flex; gap:8px; }
   .toggle-btn{
     padding:6px 10px;
@@ -122,21 +115,31 @@
   .toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
   .toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
 
-  /* compact color code style */
   .code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
 
-  /* Toast */
   .toast{
     position:fixed; right:16px; bottom:16px;
     background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none;
   }
   .toast.show{ display:block; }
 
-  /* responsive tweaks */
   @media (max-width:520px){
     .color-grid{ grid-template-columns: repeat(4, 1fr); }
     th, td{ padding:6px 4px; font-size:13px; }
-    h1{ font-size:18px; }
+    h1{ font-size:22px; }
+  }
+
+  /* New tweaks */
+  td.codes-column, th.codes-column{
+    font-size:12px;
+    line-height:1.2;
+  }
+  .action-group.vertical{
+    flex-direction: column;
+    gap:4px;
+  }
+  .action-group.vertical .toggle-btn{
+    width:100%;
   }
 </style>
 </head>
@@ -150,7 +153,6 @@
   </div>
 </header>
 
-<!-- selectors -->
 <div class="section" aria-labelledby="right-leg">
   <div class="leg-title" id="right-leg">Right Leg</div>
   <div class="color-grid" id="rightButtons"></div>
@@ -161,36 +163,27 @@
   <div class="color-grid" id="leftButtons"></div>
 </div>
 
-<!-- submit area (left aligned) -->
 <div class="submit-area">
   <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+  <div class="small-muted">Your location will be requested when submitting sightings.</div>
 </div>
 
-<!-- results -->
 <div id="results">Loading <b>view_birdsCSV_apps.csv</b>…</div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ================== CONFIG ================== */
-// CSV location (repo root)
+/* ================= CONFIG ================= */
 const CSV_URL = "https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
-
-// Baserow endpoint + create-only token (table 742957)
 const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
 const BASEROW_TOKEN = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
-
-// action option IDs in your single-select field
 const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
-/* ================== COLORS & MAPPINGS ================== */
 const colorButtons = ["alu","red","yellow","green","blue","black","white","violet","pink"];
-
-/* map CSV color values to compact display codes (and colors) */
 const colorCodeMap = {
   "yellow": { code:"ylw", color:"goldenrod" },
   "alu":    { code:"alu", color:"gray" },
-  "metal":  { code:"alu", color:"gray" }, // if CSV uses 'metal'
+  "metal":  { code:"alu", color:"gray" },
   "black":  { code:"blk", color:"black" },
   "red":    { code:"red", color:"red" },
   "green":  { code:"grn", color:"green" },
@@ -200,25 +193,22 @@ const colorCodeMap = {
   "white":  { code:"wht", color:"white" }
 };
 
-/* helper to map CSV color (possibly short/variant) to canonical key */
 function normalizeColorKey(s){
   if(!s) return "";
   s = String(s).toLowerCase().trim();
   if(s === "metal") return "alu";
-  // some CSV values may be short like 'blu' or 'ylw'
   if(s.startsWith("yl")) return "yellow";
-  if(s.startsWith("alu") || s === "alu") return "alu";
-  if(s.startsWith("blk") || s === "black") return "black";
+  if(s.startsWith("alu")) return "alu";
+  if(s.startsWith("blk")) return "black";
   if(s.startsWith("red")) return "red";
-  if(s.startsWith("gr") || s.startsWith("grn")) return "green";
-  if(s.startsWith("vio") || s === "vlt") return "violet";
-  if(s.startsWith("pn") || s === "pnk") return "pink";
-  if(s.startsWith("bl") || s === "blu" || s === "blue") return "blue";
-  if(s.startsWith("wh") || s === "wht") return "white";
+  if(s.startsWith("gr")) return "green";
+  if(s.startsWith("vio")) return "violet";
+  if(s.startsWith("pn")) return "pink";
+  if(s.startsWith("bl")) return "blue";
+  if(s.startsWith("wh")) return "white";
   return s;
 }
 
-/* build a compact code pill */
 function codePillFor(raw){
   const key = normalizeColorKey(raw);
   const meta = colorCodeMap[key];
@@ -228,7 +218,7 @@ function codePillFor(raw){
   return `<span class="code-pill" style="color:${textColor}; background:${bg};">${meta.code}</span>`;
 }
 
-/* ========== UI: build color selector buttons ========== */
+/* ================= UI ================ */
 const rightButtons = document.getElementById("rightButtons");
 const leftButtons = document.getElementById("leftButtons");
 const maxPerLeg = 2;
@@ -240,348 +230,197 @@ function makeColorButton(name){
   b.type = "button";
   b.className = "color " + name;
   b.textContent = name;
-  // style specifics for white button (ensure visible label)
-  if(name === "white"){
-    b.classList.add("white");
-  }
+  if(name === "white") b.classList.add("white");
   return b;
 }
 
-colorButtons.forEach(c => {
+colorButtons.forEach(c=>{
   const br = makeColorButton(c);
-  br.addEventListener("click", ()=>{
-    toggleColorSelection("right", c, br);
-  });
+  br.addEventListener("click", ()=>toggleColorSelection("right",c,br));
   rightButtons.appendChild(br);
-
   const bl = makeColorButton(c);
-  bl.addEventListener("click", ()=>{
-    toggleColorSelection("left", c, bl);
-  });
+  bl.addEventListener("click", ()=>toggleColorSelection("left",c,bl));
   leftButtons.appendChild(bl);
 });
 
-function toggleColorSelection(side, color, btn){
-  const arr = side === "right" ? rightSel : leftSel;
-  const otherGrid = side === "right" ? rightButtons : leftButtons;
-
+function toggleColorSelection(side,color,btn){
+  const arr = side==="right"?rightSel:leftSel;
   const idx = arr.indexOf(color);
-  if(idx >= 0){
-    arr.splice(idx,1);
-    btn.classList.remove("selected");
-  } else {
-    if(arr.length >= maxPerLeg){
-      // ignore extra
-      return;
-    }
-    arr.push(color);
-    btn.classList.add("selected");
-  }
-  renderFilteredTable(); // re-render results
+  if(idx>=0){ arr.splice(idx,1); btn.classList.remove("selected"); }
+  else if(arr.length<maxPerLeg){ arr.push(color); btn.classList.add("selected"); }
+  renderFilteredTable();
 }
 
-/* reset colors */
 document.getElementById("resetColorsBtn").addEventListener("click", ()=>{
-  rightSel.splice(0,rightSel.length);
-  leftSel.splice(0,leftSel.length);
+  rightSel.splice(0); leftSel.splice(0);
   document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
   renderFilteredTable();
 });
 
-/* ========== CSV parsing & data ========== */
-let birds = []; // array of rows from CSV
+/* ================= CSV parsing =============== */
+let birds=[];
 const resultsEl = document.getElementById("results");
 
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/);
-  if(lines.length === 0) return [];
+  if(lines.length===0) return [];
   const headers = lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
-  const gi = key => headers.indexOf(key);
+  const gi = key=>headers.indexOf(key);
 
-  // expected header names (use lower-case)
-  const i_bird_id = gi("bird_id");
-  const i_mark_color = gi("mark_color");
-  const i_r_top = gi("r_top");
-  const i_r_bottom = gi("r_bottom");
-  const i_l_top = gi("l_top");
-  const i_l_bottom = gi("l_bottom");
-  const i_territory = gi("territory");
-  const i_territory_name = gi("territory_name");
-  const i_name = gi("name");
-  const i_sex = gi("sex");
-  const i_age = gi("age");
-  const i_dist = gi("dist punt dal gal (m)");
-  const i_banded_on = gi("banded_on");
+  const i_bird_id = gi("bird_id"), i_name=gi("name"), i_sex=gi("sex"),
+        i_age=gi("age"), i_r_top=gi("r_top"), i_r_bottom=gi("r_bottom"),
+        i_l_top=gi("l_top"), i_l_bottom=gi("l_bottom"),
+        i_territory=gi("territory"), i_territory_name=gi("territory_name"),
+        i_dist=gi("dist punt dal gal (m)"), i_banded_on=gi("banded_on");
 
   return lines.slice(1).map(row=>{
     const cols = [];
-    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
-      cols.push(x.replace(/^"|"$/g,'').trim());
-    });
-
+    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'').trim()));
     return {
-      bird_id: cols[i_bird_id] || "",
-      mark_color: cols[i_mark_color] || "",
+      bird_id: cols[i_bird_id]||"",
+      name: cols[i_name]||"",
+      sex: cols[i_sex]||"",
+      age: cols[i_age]||"",
       Rt: (cols[i_r_top]||"").toLowerCase(),
       Rb: (cols[i_r_bottom]||"").toLowerCase(),
       Lt: (cols[i_l_top]||"").toLowerCase(),
       Lb: (cols[i_l_bottom]||"").toLowerCase(),
-      territory: cols[i_territory] || cols[i_territory_name] || "",
-      name: cols[i_name] || "",
-      sex: cols[i_sex] || "",
-      age: cols[i_age] || "",
-      dist: cols[i_dist] || "",
-      banded_on: cols[i_banded_on] || ""
+      territory: cols[i_territory]||cols[i_territory_name]||"",
+      dist: cols[i_dist]||"",
+      banded_on: cols[i_banded_on]||""
     };
   });
 }
 
-/* ========== Filtering logic ========== */
+/* ================= Filtering ================= */
 function matchesRow(row){
-  // build arrays of selected normalized color keys
-  const leftOk = [ normalizeColorKey(row.Lt), normalizeColorKey(row.Lb) ].filter(Boolean);
-  const rightOk = [ normalizeColorKey(row.Rt), normalizeColorKey(row.Rb) ].filter(Boolean);
-
-  // convert selected buttons to normalized names similar to CSV mapping
-  const Rsel = rightSel.map(s => mapButtonToCsvKey(s)).filter(Boolean);
-  const Lsel = leftSel.map(s => mapButtonToCsvKey(s)).filter(Boolean);
-
-  // if no selection on a side, it's OK
-  const rightMatch = (Rsel.length === 0) || Rsel.every(sel => rightOk.includes(sel));
-  const leftMatch  = (Lsel.length === 0) || Lsel.every(sel => leftOk.includes(sel));
-
+  const leftOk=[normalizeColorKey(row.Lt),normalizeColorKey(row.Lb)].filter(Boolean);
+  const rightOk=[normalizeColorKey(row.Rt),normalizeColorKey(row.Rb)].filter(Boolean);
+  const Rsel=rightSel.map(mapButtonToCsvKey).filter(Boolean);
+  const Lsel=leftSel.map(mapButtonToCsvKey).filter(Boolean);
+  const rightMatch=(Rsel.length===0)||Rsel.every(sel=>rightOk.includes(sel));
+  const leftMatch=(Lsel.length===0)||Lsel.every(sel=>leftOk.includes(sel));
   return rightMatch && leftMatch;
 }
 
-/* map the button label to CSV style key (inverse of normalizeColorKey)
-   Our buttons are named like 'alu','red','yellow' etc; CSV may use variants.
-*/
-function mapButtonToCsvKey(btnName){
-  // we use canonical keys: alu, red, yellow, green, blue, black, white, violet, pink
-  return btnName; // these are the canonical names used in normalizeColorKey
-}
+function mapButtonToCsvKey(btnName){ return btnName; }
 
-/* ========== Selection model for Sighted/Maybe toggles ========== */
-// store selections per bird id: value = null / "sighted" / "maybe"
-const perBirdSelection = new Map();
+const perBirdSelection=new Map();
 
-/* toggle exclusive per bird */
-function toggleBirdSelection(birdId, type, btnNode){
-  const current = perBirdSelection.get(birdId) || null;
-  if(current === type){
-    perBirdSelection.set(birdId, null);
-    btnNode.classList.remove("toggle-on");
-    btnNode.classList.remove(type);
-  } else {
-    perBirdSelection.set(birdId, type);
-    // update UI: we will re-render row buttons
-    renderFilteredTable();
-  }
-}
+function escapeHtml(s){ if(s==null)return""; return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
 
-/* find matched rows and render table */
+/* ================= Render table ================= */
 function renderFilteredTable(){
-  if(!birds.length){
-    resultsEl.innerHTML = "<p class='small-muted'>No data loaded yet.</p>";
-    return;
-  }
-
+  if(!birds.length){ resultsEl.innerHTML="<p class='small-muted'>No data loaded yet.</p>"; return; }
   const matched = birds.filter(matchesRow);
+  if(matched.length===0){ resultsEl.innerHTML="<p class='small-muted'>No matches.</p>"; return; }
 
-  if(matched.length === 0){
-    resultsEl.innerHTML = "<p class='small-muted'>No matches.</p>";
-    return;
-  }
-
-  // build table
-  const table = document.createElement("table");
-  const thead = document.createElement("thead");
-  const trh = document.createElement("tr");
-  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach(h=>{
-    const th = document.createElement("th");
-    th.textContent = h;
+  const table=document.createElement("table");
+  const thead=document.createElement("thead");
+  const trh=document.createElement("tr");
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+    const th=document.createElement("th");
+    th.textContent=h;
+    if(i===3) th.classList.add("codes-column");
     trh.appendChild(th);
   });
   thead.appendChild(trh);
   table.appendChild(thead);
+  const tbody=document.createElement("tbody");
 
-  const tbody = document.createElement("tbody");
+  matched.forEach(row=>{
+    const tr=document.createElement("tr");
 
-  matched.forEach(row => {
-    const tr = document.createElement("tr");
-
-    // Name (bird_id)
-    const tdName = document.createElement("td");
-    tdName.innerHTML = `${escapeHtml(row.name || "")} <div class="small-muted">(${escapeHtml(row.bird_id || "")})</div>`;
+    const tdName=document.createElement("td");
+    tdName.innerHTML=`${escapeHtml(row.name||"")} <div class="small-muted">(${escapeHtml(row.bird_id||"")})</div>`;
     tr.appendChild(tdName);
 
-    // Sex / Age (Banded)
-    const tdSex = document.createElement("td");
-    tdSex.textContent = `${row.sex || ""}${row.age ? " / "+row.age : ""}${row.banded_on ? " ("+row.banded_on+")" : ""}`;
+    const tdSex=document.createElement("td");
+    tdSex.textContent=`${row.sex||""}${row.age?" / "+row.age:""}${row.banded_on?" ("+row.banded_on+")":""}`;
     tr.appendChild(tdSex);
 
-    // Territory (Dist)
-    const tdTerr = document.createElement("td");
-    tdTerr.textContent = `${row.territory || ""}${row.dist ? " ("+row.dist+" m)" : ""}`;
+    const tdTerr=document.createElement("td");
+    tdTerr.textContent=`${row.territory||""}${row.dist?" ("+row.dist+" m)":""}`;
     tr.appendChild(tdTerr);
 
-    // R/L codes
-    const tdCodes = document.createElement("td");
-    // show compact codes using mapping
-    const codesHtml = `${codePillFor(row.Rt).trim()}/${codePillFor(row.Rb).trim()}-${codePillFor(row.Lt).trim()}/${codePillFor(row.Lb).trim()}`;
-    tdCodes.innerHTML = codesHtml;
+    const tdCodes=document.createElement("td");
+    tdCodes.classList.add("codes-column");
+    tdCodes.innerHTML=`${codePillFor(row.Rt)}/${codePillFor(row.Rb)}-${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`;
     tr.appendChild(tdCodes);
 
-    // Actions (toggles)
-    const tdActions = document.createElement("td");
-    const wrap = document.createElement("div");
-    wrap.className = "action-group";
+    const tdActions=document.createElement("td");
+    const wrap=document.createElement("div");
+    wrap.className="action-group vertical";
 
-    const btnSight = document.createElement("button");
-    btnSight.type = "button";
-    btnSight.className = "toggle-btn sighted";
-    btnSight.textContent = "Sighted";
+    const btnSight=document.createElement("button");
+    btnSight.type="button"; btnSight.className="toggle-btn sighted"; btnSight.textContent="Sighted";
+    const btnMaybe=document.createElement("button");
+    btnMaybe.type="button"; btnMaybe.className="toggle-btn maybe"; btnMaybe.textContent="Maybe";
 
-    const btnMaybe = document.createElement("button");
-    btnMaybe.type = "button";
-    btnMaybe.className = "toggle-btn maybe";
-    btnMaybe.textContent = "Maybe";
-
-    // set initial state class if selection exists
-    const cur = perBirdSelection.get(row.bird_id) || null;
-    if(cur === "sighted"){ btnSight.classList.add("toggle-on"); }
-    if(cur === "maybe"){ btnMaybe.classList.add("toggle-on"); }
+    const cur=perBirdSelection.get(row.bird_id)||null;
+    if(cur==="sighted") btnSight.classList.add("toggle-on");
+    if(cur==="maybe") btnMaybe.classList.add("toggle-on");
 
     btnSight.addEventListener("click", ()=>{
-      // exclusive: set sighted, unset maybe
-      const curSel = perBirdSelection.get(row.bird_id) || null;
-      if(curSel === "sighted"){
-        perBirdSelection.set(row.bird_id, null);
-      } else {
-        perBirdSelection.set(row.bird_id, "sighted");
-      }
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted");
       renderFilteredTable();
     });
-
     btnMaybe.addEventListener("click", ()=>{
-      const curSel = perBirdSelection.get(row.bird_id) || null;
-      if(curSel === "maybe"){
-        perBirdSelection.set(row.bird_id, null);
-      } else {
-        perBirdSelection.set(row.bird_id, "maybe");
-      }
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe");
       renderFilteredTable();
     });
 
-    wrap.appendChild(btnSight);
-    wrap.appendChild(btnMaybe);
-    tdActions.appendChild(wrap);
-    tr.appendChild(tdActions);
-
+    wrap.appendChild(btnSight); wrap.appendChild(btnMaybe);
+    tdActions.appendChild(wrap); tr.appendChild(tdActions);
     tbody.appendChild(tr);
   });
 
   table.appendChild(tbody);
-  resultsEl.innerHTML = "";
-  resultsEl.appendChild(table);
+  resultsEl.innerHTML=""; resultsEl.appendChild(table);
 }
 
-/* escape html */
-function escapeHtml(s){
-  if(s == null) return "";
-  return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
-}
-
-/* ========== Submit Sightings logic ========== */
-const submitBtn = document.getElementById("submitBtn");
-submitBtn.addEventListener("click", handleSubmitAll);
-
-function showToast(msg, t=3000){
-  const toast = document.getElementById("toast");
-  toast.textContent = msg;
-  toast.classList.add("show");
-  setTimeout(()=> toast.classList.remove("show"), t);
-}
-
-async function handleSubmitAll(){
-  // collect all selections
-  const entries = [];
-  for(const [bird_id, val] of perBirdSelection.entries()){
-    if(val === "sighted" || val === "maybe"){
-      // find bird full row
-      const r = birds.find(b => b.bird_id === bird_id);
-      if(!r) continue;
-      entries.push({row: r, action: val});
-    }
+/* ========== Geolocation request ========== */
+async function requestLocation(){
+  if(!navigator.geolocation){
+    alert("Geolocation is not supported by your browser.");
+    return {lat:null, lon:null};
   }
-  if(entries.length === 0){
-    alert("No selected birds to submit.");
-    return;
-  }
-
-  // get geolocation (graceful fallback)
-  showToast("Getting location...");
-  const gps = await new Promise(resolve=>{
-    if(!navigator.geolocation) return resolve({lat:null, lon:null});
+  return new Promise(resolve=>{
     navigator.geolocation.getCurrentPosition(
-      p => resolve({lat: Number(p.coords.latitude.toFixed(10)), lon: Number(p.coords.longitude.toFixed(10))}),
-      e => resolve({lat:null, lon:null}),
-      { timeout: 8000 }
+      pos=>resolve({lat: Number(pos.coords.latitude.toFixed(10)), lon: Number(pos.coords.longitude.toFixed(10))}),
+      err=>{
+        if(err.code===1) alert("Location denied; coordinates will be empty.");
+        else if(err.code===2) alert("Location unavailable; coordinates will be empty.");
+        else if(err.code===3) alert("Location timeout; coordinates will be empty.");
+        resolve({lat:null, lon:null});
+      },
+      {timeout:8000}
     );
   });
-
-  // submit each entry sequentially (could be batched later)
-  showToast("Submitting sightings...");
-  let successCount = 0;
-  for(const e of entries){
-    const payload = {
-      bird_name: e.row.name || "",
-      bird_id: e.row.bird_id || "",
-      action: (e.action === "sighted" ? ACTION_IDS.sighted : ACTION_IDS.maybe),
-      latitude: gps.lat,
-      longitude: gps.lon
-    };
-
-    try {
-      const r = await fetch(BASEROW_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Authorization": "Token " + BASEROW_TOKEN,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-      if(r.ok) successCount++;
-      else {
-        const txt = await r.text().catch(()=>"");
-        console.error("Baserow save error", r.status, txt);
-      }
-    } catch(err){
-      console.error("Network error posting to Baserow", err);
-    }
-  }
-
-  showToast(`Submitted ${successCount}/${entries.length}`);
-  // reset selections
-  perBirdSelection.clear();
-  renderFilteredTable();
 }
 
-/* ========== Initial fetch of CSV & bootstrap ========== */
-fetch(CSV_URL)
-  .then(r => {
-    if(!r.ok) throw new Error("Failed to fetch CSV: "+r.status);
-    return r.text();
-  })
-  .then(txt => {
-    birds = parseCSV(txt);
-    renderFilteredTable();
-  })
-  .catch(err => {
-    resultsEl.innerHTML = `<p style="color:crimson">⚠️ Failed to load CSV: ${escapeHtml(err && err.message ? err.message : String(err))}</p>`;
-    console.error(err);
-  });
+/* ========== Submit sightings ========== */
+const submitBtn=document.getElementById("submitBtn");
+submitBtn.addEventListener("click", handleSubmitAll);
 
-</script>
-</body>
-</html>
+async function handleSubmitAll(){
+  const entries=[];
+  for(const [bird_id,val] of perBirdSelection.entries()){
+    if(val==="sighted"||val==="maybe"){
+      const r=birds.find(b=>b.bird_id===bird_id);
+      if(!r) continue;
+      entries.push({row:r, action:val});
+    }
+  }
+  if(entries.length===0){ alert("No selected birds to submit."); return; }
+
+  showToast("Getting location...");
+  const gps=await requestLocation();
+
+  showToast("Submitting sightings...");
+  let successCount=0;
+  for(const e of entries){
+    const payload={
+      "bird_name": e.row.name||"",
+      "bird_id": e.row.bird_id||"",
+      "action": (e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS
