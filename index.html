@@ -5,142 +5,83 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Dipper Finder</title>
 <style>
-  :root{
-    --muted:#666;
-    --accent:#2a4d69;
-    --ok:#4caf50;
-    --danger:#d9534f;
-  }
-  body{
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    margin:0;
-    padding:12px;
-    background:#f8f8f8;
-    color:#222;
-  }
-
-  header{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    margin-bottom:6px;
-  }
-  h1{
-    font-size:24px;
-    margin:0;
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .bird-img{ width:48px; height:48px; object-fit:contain; }
-
-  .top-actions{ display:flex; gap:12px; align-items:center; }
-  .reset-btn{
-    background:#e6e6e6;
-    border:1px solid #bbb;
-    padding:8px 12px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:14px;
-  }
-
-  .section{
-    background:white;
-    border-radius:10px;
-    padding:8px;
-    box-shadow:0 1px 4px rgba(0,0,0,0.06);
-    margin:8px 0;
-  }
-  .leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
-
-  .color-grid{
-    display:grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap:6px;
-    padding:4px;
-  }
-  button.color{
-    height:36px;
-    border-radius:8px;
-    border:1px solid rgba(0,0,0,0.12);
-    font-weight:700;
-    cursor:pointer;
-    color:white;
-  }
-  .alu{ background:gray; }
-  .red{ background:red; }
-  .yellow{ background:goldenrod; color:black; }
-  .green{ background:green; }
-  .blue{ background:steelblue; }
-  .black{ background:black; }
-  button.color.white{
-    background:white !important;
-    color:black !important;
-    border:1px solid #999;
-    font-weight:700;
-  }
-  .violet{ background:purple; }
-  .pink{ background:hotpink; color:black; }
-
-  button.color.selected{ outline:3px solid #000; }
-
-  .submit-area{ margin-top:6px; }
-  .submit-btn{
-    background:var(--accent);
-    color:white;
-    padding:10px 14px;
-    border-radius:8px;
-    border:none;
-    cursor:pointer;
-    font-size:15px;
-    text-align:left;
-    display:block;
-  }
-
-  #results{ margin-top:10px; text-align:left; }
-  table{ width:100%; border-collapse:collapse; font-size:14px; }
-  th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
-  th{ background:#f0f6fa; text-align:left; font-weight:600; }
-  .small-muted{ color:var(--muted); font-size:12px; }
-
-  .action-group{ display:flex; gap:8px; }
-  .toggle-btn{
-    padding:6px 10px;
-    border-radius:6px;
-    border:1px solid #bbb;
-    cursor:pointer;
-    background:#f4f4f4;
-    font-weight:600;
-  }
-  .toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
-  .toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
-
-  .code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
-
-  .toast{
-    position:fixed; right:16px; bottom:16px;
-    background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none;
-  }
-  .toast.show{ display:block; }
-
-  @media (max-width:520px){
-    .color-grid{ grid-template-columns: repeat(4, 1fr); }
-    th, td{ padding:6px 4px; font-size:13px; }
-    h1{ font-size:22px; }
-  }
-
-  /* New tweaks */
-  td.codes-column, th.codes-column{
-    font-size:12px;
-    line-height:1.2;
-  }
-  .action-group.vertical{
-    flex-direction: column;
-    gap:4px;
-  }
-  .action-group.vertical .toggle-btn{
-    width:100%;
-  }
+:root{
+  --muted:#666;
+  --accent:#2a4d69;
+  --ok:#4caf50;
+  --danger:#d9534f;
+}
+body{
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  margin:0; padding:12px;
+  background:#f8f8f8; color:#222;
+}
+header{
+  display:flex; flex-direction:column; gap:8px; margin-bottom:6px;
+}
+h1{
+  font-size:24px; margin:0; display:flex; align-items:center; gap:8px;
+}
+.bird-img{ width:48px; height:48px; object-fit:contain; }
+.top-actions{ display:flex; gap:12px; align-items:center; }
+.reset-btn{
+  background:#e6e6e6; border:1px solid #bbb; padding:8px 12px;
+  border-radius:8px; cursor:pointer; font-size:14px;
+}
+.section{
+  background:white; border-radius:10px; padding:8px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0;
+}
+.leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
+.color-grid{
+  display:grid; grid-template-columns: repeat(5, 1fr); gap:6px; padding:4px;
+}
+button.color{
+  height:36px; border-radius:8px; border:1px solid rgba(0,0,0,0.12);
+  font-weight:700; cursor:pointer; color:white;
+}
+.alu{ background:gray; }
+.red{ background:red; }
+.yellow{ background:goldenrod; color:black; }
+.green{ background:green; }
+.blue{ background:steelblue; }
+.black{ background:black; }
+button.color.white{ background:white !important; color:black !important; border:1px solid #999; font-weight:700; }
+.violet{ background:purple; }
+.pink{ background:hotpink; color:black; }
+button.color.selected{ outline:3px solid #000; }
+.submit-area{ margin-top:6px; }
+.submit-btn{
+  background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none;
+  cursor:pointer; font-size:15px; text-align:left; display:block;
+}
+#results{ margin-top:10px; text-align:left; }
+table{ width:100%; border-collapse:collapse; font-size:14px; }
+th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
+th{ background:#f0f6fa; text-align:left; font-weight:600; }
+.small-muted{ color:var(--muted); font-size:12px; }
+.action-group{ display:flex; gap:8px; }
+.toggle-btn{
+  padding:6px 10px; border-radius:6px; border:1px solid #bbb;
+  cursor:pointer; background:#f4f4f4; font-weight:600;
+}
+.toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
+.toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
+.code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
+.toast{
+  position:fixed; right:16px; bottom:16px; background:rgba(0,0,0,0.8); color:white;
+  padding:10px 12px; border-radius:8px; display:none;
+}
+.toast.show{ display:block; }
+@media (max-width:520px){
+  .color-grid{ grid-template-columns: repeat(4, 1fr); }
+  th, td{ padding:6px 4px; font-size:13px; }
+  h1{ font-size:22px; }
+}
+/* Additional tweaks */
+td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
+.action-group.vertical{ flex-direction: column; gap:4px; }
+.action-group.vertical .toggle-btn{ width:100%; }
 </style>
 </head>
 <body>
@@ -178,7 +119,6 @@ const CSV_URL = "https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
 const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
 const BASEROW_TOKEN = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
 const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
-
 const colorButtons = ["alu","red","yellow","green","blue","black","white","violet","pink"];
 const colorCodeMap = {
   "yellow": { code:"ylw", color:"goldenrod" },
@@ -192,7 +132,6 @@ const colorCodeMap = {
   "blue":   { code:"blu", color:"steelblue" },
   "white":  { code:"wht", color:"white" }
 };
-
 function normalizeColorKey(s){
   if(!s) return "";
   s = String(s).toLowerCase().trim();
@@ -208,7 +147,6 @@ function normalizeColorKey(s){
   if(s.startsWith("wh")) return "white";
   return s;
 }
-
 function codePillFor(raw){
   const key = normalizeColorKey(raw);
   const meta = colorCodeMap[key];
@@ -218,22 +156,18 @@ function codePillFor(raw){
   return `<span class="code-pill" style="color:${textColor}; background:${bg};">${meta.code}</span>`;
 }
 
-/* ================= UI ================ */
+/* ================= UI ================= */
 const rightButtons = document.getElementById("rightButtons");
 const leftButtons = document.getElementById("leftButtons");
 const maxPerLeg = 2;
 const rightSel = [];
 const leftSel = [];
-
 function makeColorButton(name){
   const b = document.createElement("button");
-  b.type = "button";
-  b.className = "color " + name;
-  b.textContent = name;
-  if(name === "white") b.classList.add("white");
+  b.type="button"; b.className="color "+name; b.textContent=name;
+  if(name==="white") b.classList.add("white");
   return b;
 }
-
 colorButtons.forEach(c=>{
   const br = makeColorButton(c);
   br.addEventListener("click", ()=>toggleColorSelection("right",c,br));
@@ -242,7 +176,6 @@ colorButtons.forEach(c=>{
   bl.addEventListener("click", ()=>toggleColorSelection("left",c,bl));
   leftButtons.appendChild(bl);
 });
-
 function toggleColorSelection(side,color,btn){
   const arr = side==="right"?rightSel:leftSel;
   const idx = arr.indexOf(color);
@@ -250,31 +183,29 @@ function toggleColorSelection(side,color,btn){
   else if(arr.length<maxPerLeg){ arr.push(color); btn.classList.add("selected"); }
   renderFilteredTable();
 }
-
 document.getElementById("resetColorsBtn").addEventListener("click", ()=>{
   rightSel.splice(0); leftSel.splice(0);
   document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
   renderFilteredTable();
 });
 
-/* ================= CSV parsing =============== */
+/* ================= CSV parsing ================= */
 let birds=[];
 const resultsEl = document.getElementById("results");
-
 function parseCSV(text){
   const lines = text.trim().split(/\r?\n/);
   if(lines.length===0) return [];
   const headers = lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
   const gi = key=>headers.indexOf(key);
 
-  const i_bird_id = gi("bird_id"), i_name=gi("name"), i_sex=gi("sex"),
+  const i_bird_id=gi("bird_id"), i_name=gi("name"), i_sex=gi("sex"),
         i_age=gi("age"), i_r_top=gi("r_top"), i_r_bottom=gi("r_bottom"),
         i_l_top=gi("l_top"), i_l_bottom=gi("l_bottom"),
         i_territory=gi("territory"), i_territory_name=gi("territory_name"),
         i_dist=gi("dist punt dal gal (m)"), i_banded_on=gi("banded_on");
 
   return lines.slice(1).map(row=>{
-    const cols = [];
+    const cols=[];
     row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'').trim()));
     return {
       bird_id: cols[i_bird_id]||"",
@@ -302,17 +233,14 @@ function matchesRow(row){
   const leftMatch=(Lsel.length===0)||Lsel.every(sel=>leftOk.includes(sel));
   return rightMatch && leftMatch;
 }
-
 function mapButtonToCsvKey(btnName){ return btnName; }
-
 const perBirdSelection=new Map();
-
 function escapeHtml(s){ if(s==null)return""; return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
 
 /* ================= Render table ================= */
 function renderFilteredTable(){
   if(!birds.length){ resultsEl.innerHTML="<p class='small-muted'>No data loaded yet.</p>"; return; }
-  const matched = birds.filter(matchesRow);
+  const matched=birds.filter(matchesRow);
   if(matched.length===0){ resultsEl.innerHTML="<p class='small-muted'>No matches.</p>"; return; }
 
   const table=document.createElement("table");
@@ -324,8 +252,7 @@ function renderFilteredTable(){
     if(i===3) th.classList.add("codes-column");
     trh.appendChild(th);
   });
-  thead.appendChild(trh);
-  table.appendChild(thead);
+  thead.appendChild(trh); table.appendChild(thead);
   const tbody=document.createElement("tbody");
 
   matched.forEach(row=>{
@@ -361,30 +288,20 @@ function renderFilteredTable(){
     if(cur==="sighted") btnSight.classList.add("toggle-on");
     if(cur==="maybe") btnMaybe.classList.add("toggle-on");
 
-    btnSight.addEventListener("click", ()=>{
-      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted");
-      renderFilteredTable();
-    });
-    btnMaybe.addEventListener("click", ()=>{
-      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe");
-      renderFilteredTable();
-    });
+    btnSight.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted"); renderFilteredTable(); });
+    btnMaybe.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe"); renderFilteredTable(); });
 
     wrap.appendChild(btnSight); wrap.appendChild(btnMaybe);
     tdActions.appendChild(wrap); tr.appendChild(tdActions);
     tbody.appendChild(tr);
   });
-
   table.appendChild(tbody);
   resultsEl.innerHTML=""; resultsEl.appendChild(table);
 }
 
-/* ========== Geolocation request ========== */
+/* ================= Geolocation ================= */
 async function requestLocation(){
-  if(!navigator.geolocation){
-    alert("Geolocation is not supported by your browser.");
-    return {lat:null, lon:null};
-  }
+  if(!navigator.geolocation){ alert("Geolocation not supported."); return {lat:null, lon:null}; }
   return new Promise(resolve=>{
     navigator.geolocation.getCurrentPosition(
       pos=>resolve({lat: Number(pos.coords.latitude.toFixed(10)), lon: Number(pos.coords.longitude.toFixed(10))}),
@@ -393,13 +310,12 @@ async function requestLocation(){
         else if(err.code===2) alert("Location unavailable; coordinates will be empty.");
         else if(err.code===3) alert("Location timeout; coordinates will be empty.");
         resolve({lat:null, lon:null});
-      },
-      {timeout:8000}
+      }, {timeout:8000}
     );
   });
 }
 
-/* ========== Submit sightings ========== */
+/* ================= Submit sightings ================= */
 const submitBtn=document.getElementById("submitBtn");
 submitBtn.addEventListener("click", handleSubmitAll);
 
@@ -421,6 +337,42 @@ async function handleSubmitAll(){
   let successCount=0;
   for(const e of entries){
     const payload={
-      "bird_name": e.row.name||"",
-      "bird_id": e.row.bird_id||"",
-      "action": (e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS
+      bird_name: e.row.name||"",
+      bird_id: e.row.bird_id||"",
+      action: (e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS.maybe),
+      latitude: gps.lat,
+      longitude: gps.lon
+    };
+    try{
+      const r=await fetch(BASEROW_ENDPOINT,{
+        method:"POST",
+        headers:{
+          "Authorization":"Token "+BASEROW_TOKEN,
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(payload)
+      });
+      if(r.ok) successCount++;
+      else console.error("Baserow save error", r.status, await r.text().catch(()=> ""));
+    } catch(err){ console.error("Network error posting to Baserow", err); }
+  }
+  showToast(`Submitted ${successCount}/${entries.length}`);
+  perBirdSelection.clear();
+  renderFilteredTable();
+}
+
+/* ================= Toast ================= */
+function showToast(msg,t=3000){
+  const toast=document.getElementById("toast");
+  toast.textContent=msg; toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),t);
+}
+
+/* ================= Init CSV ================= */
+fetch(CSV_URL)
+  .then(r=>{ if(!r.ok) throw new Error("Failed to fetch CSV: "+r.status); return r.text(); })
+  .then(txt=>{ birds=parseCSV(txt); renderFilteredTable(); })
+  .catch(err=>{ resultsEl.innerHTML=`<p style="color:crimson">⚠️ Failed to load CSV: ${escapeHtml(err.message||String(err))}</p>`; console.error(err); });
+</script>
+</body>
+</html>
