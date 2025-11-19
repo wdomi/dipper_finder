@@ -1,425 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dipper Finder</title>
-  <style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dipper Finder</title>
+
+<style>
     body {
-      font-family: system-ui, sans-serif;
-      margin: 20px;
-      background: #f8f8f8;
-      color: #333;
-      text-align: center;
-    }
-    h1 { color: #2a4d69; }
-    .section {
-      margin: 1em auto;
-      padding: 1em;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      max-width: 800px;
+        font-family: sans-serif;
+        margin: 0;
+        padding: 10px;
+        background: #f6f6f6;
     }
 
-    /* color buttons */
-    button.color {
-      border: none;
-      margin: 3px;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      color: white;
-      font-weight: bold;
-    }
-    button.color.selected { outline: 3px solid #000; }
-
-    .alu { background: gray; }
-    .red { background: red; }
-    .yellow { background: goldenrod; color: black; }
-    .green { background: green; }
-    .blue { background: steelblue; }
-    .black { background: black; }
-
-    /* explicit, high-specificity white button rule so it's always visible */
-    button.color.white {
-      background: white !important;
-      color: black !important;
-      border: 1px solid #999;
-      font-weight: bold;
+    h1 {
+        font-size: 26px;
+        margin-bottom: 8px;
     }
 
-    .violet { background: purple; }
-    .pink { background: hotpink; color: black; }
-
-    .bird-img { width: 40px; height: 40px; vertical-align: middle; object-fit: contain; }
-
-    #results { text-align: left; margin-top: 10px; }
-
-    #results table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    #results th, #results td {
-      border-bottom: 1px solid #ccc;
-      text-align: left;
-      padding: 6px 8px;
-      vertical-align: middle;
+    .reset-btn {
+        margin-bottom: 16px;
+        margin-top: 4px;
+        padding: 8px 14px;
+        background: #ddd;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 15px;
     }
-    #results th { background: #eef; }
 
-    .action-btn {
-      padding: 6px 10px;
-      margin-right: 6px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: #2a4d69;
-      color: white;
+    .leg-title {
+        margin-top: 6px;
+        margin-bottom: 2px; /* reduced whitespace */
+        font-weight: bold;
     }
-    .action-btn.maybe { background: #777; }
 
-    .small-muted { color: #666; font-size: 0.9rem; }
-    .toast {
-      position: fixed;
-      right: 20px;
-      bottom: 20px;
-      background: rgba(0,0,0,0.85);
-      color: white;
-      padding: 10px 14px;
-      border-radius: 8px;
-      display: none;
-      z-index: 9999;
+    .color-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        margin-bottom: 10px;
     }
-    .visible { display: block; }
-  </style>
+
+    .color-button {
+        width: 100%;
+        height: 38px;
+        border-radius: 6px;
+        border: 1px solid #aaa;
+        font-size: 12px;
+        color: #000;
+        cursor: pointer;
+    }
+
+    .selected {
+        outline: 3px solid #000;
+    }
+
+    .results {
+        margin-top: 8px;
+    }
+
+    .bird-entry {
+        background: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+    }
+
+    .sighting-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    .sighting-buttons button {
+        flex: 1;
+        padding: 6px;
+        font-size: 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .sighted {
+        background: #b7ffb7;
+    }
+
+    .maybe {
+        background: #ffe6a8;
+    }
+
+    .submit-btn {
+        margin-top: 14px;
+        padding: 10px 14px;
+        background: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        text-align: left; /* left aligned */
+        display: block;
+    }
+
+</style>
 </head>
 <body>
-  <h1><img src="Johann.png" class="bird-img" alt="icon" /> Dipper Finder</h1>
 
-  <div class="section">
-    <h2>Right Leg</h2>
-    <div id="rightButtons"></div>
-  </div>
+<h1>Dipper Finder</h1>
 
-  <div class="section">
-    <h2>Left Leg</h2>
-    <div id="leftButtons"></div>
-  </div>
+<button class="reset-btn" onclick="resetAll()">Reset – select up to 2 colors per leg</button>
 
-  <div style="margin:8px 0;">
-    <button id="resetBtn">Reset</button>
-    <span class="small-muted"> — select up to 2 colors per leg</span>
-  </div>
+<div id="color-selectors">
+    <div class="leg-title">Right Leg</div>
+    <!-- Reduced whitespace -->
+    <div class="color-grid" id="right-leg-grid"></div>
 
-  <div id="results">Loading <b>view_birdsCSV_apps.csv</b>...</div>
+    <div class="leg-title">Left Leg</div>
+    <!-- Reduced whitespace -->
+    <div class="color-grid" id="left-leg-grid"></div>
+</div>
 
-  <div id="toast" class="toast"></div>
+<div class="results" id="results"></div>
+
+<button class="submit-btn" onclick="submitSightings()">Submit Sightings</button>
 
 <script>
-/* ========== CONFIG ========== */
-/* Baserow: table endpoint and create-only token (table 742957) */
-const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
-/* CREATE-ONLY token you provided (safe for frontend writes) */
-const BASEROW_TOKEN = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
+/* ---------------------------------------------
+   COLOR SETUP
+--------------------------------------------- */
+const colors = [
+    { name: "ylw", hex: "#fff700" },
+    { name: "alu", hex: "#d9d9d9" },
+    { name: "blk", hex: "#000000" },
+    { name: "red", hex: "#ff0000" },
+    { name: "grn", hex: "#00aa00" },
+    { name: "vlt", hex: "#9933ff" },
+    { name: "pnk", hex: "#ff82c6" },
+    { name: "blu", hex: "#0066ff" },
+    { name: "wht", hex: "#ffffff" }
+];
 
-/* Color mapping for display */
-const colorMap = {
-  "alu": {name:"alu", color:"gray", bg:"transparent"},
-  "red": {name:"red", color:"red", bg:"transparent"},
-  "yellow": {name:"yellow", color:"goldenrod", bg:"transparent"},
-  "green": {name:"green", color:"green", bg:"transparent"},
-  "blue": {name:"blue", color:"steelblue", bg:"transparent"},
-  "black": {name:"black", color:"black", bg:"transparent"},
-  "white": {name:"white", color:"black", bg:"#eee"},
-  "violet": {name:"violet", color:"purple", bg:"transparent"},
-  "pink": {name:"pink", color:"hotpink", bg:"transparent"}
-};
-
-const colors = ["alu","red","yellow","green","blue","black","white","violet","pink"];
-const leftSel = new Set();
-const rightSel = new Set();
-
-let birds = []; // parsed CSV
-const res = document.getElementById("results");
-const toast = document.getElementById("toast");
-
-function showToast(msg, timeout=3000){
-  toast.textContent = msg;
-  toast.classList.add("visible");
-  setTimeout(()=> toast.classList.remove("visible"), timeout);
-}
-
-/* convert any CSV color token to our keys (metal -> alu etc) */
-function short(c){
-  if(!c) return "";
-  c = c.toLowerCase();
-  if(c === "metal") return "alu";
-  // some CSV values might be like 'blu' or 'blu.'; keep simple
-  return c;
-}
-
-function colorSpan(code){
-  code = short(code);
-  if(!code) return "";
-  const c = colorMap[code];
-  if(!c) return escapeHtml(code);
-  return `<span style="color:${c.color}; background:${c.bg}; font-weight:600; padding:0 4px; border-radius:3px;">${escapeHtml(c.name)}</span>`;
-}
-
-/* Escape text for HTML injection safety */
-function escapeHtml(s){
-  if(s == null) return "";
-  return String(s)
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
-
-/* ========== BUTTONS: create color selector buttons ========== */
-function makeButtons(side, container){
-  colors.forEach(c=>{
-    const b = document.createElement("button");
-    b.type = "button";
-    b.textContent = c;
-    b.className = "color " + c;
-    b.addEventListener("click", ()=>{
-      toggleSelect(side, c, b);
-      renderTable(); // re-render results immediately
+/* Render color buttons */
+function setupLegGrid(leg) {
+    const grid = document.getElementById(`${leg}-leg-grid`);
+    colors.forEach(color => {
+        const btn = document.createElement("button");
+        btn.className = "color-button";
+        btn.style.background = color.hex;
+        btn.textContent = color.name;
+        btn.onclick = () => toggleColor(leg, color.name, btn);
+        grid.appendChild(btn);
     });
-    container.appendChild(b);
-  });
 }
 
-function toggleSelect(side, color, btn){
-  const set = side === "L" ? leftSel : rightSel;
-  if(set.has(color)){
-    set.delete(color);
-    btn.classList.remove("selected");
-  } else if(set.size < 2){
-    set.add(color);
-    btn.classList.add("selected");
-  } else {
-    alert("Max 2 colors per leg");
-  }
-}
+setupLegGrid("right");
+setupLegGrid("left");
 
-/* ========== CSV parsing ========== */
-/* This parser is robust for quoted fields */
-function parseCSV(text){
-  const lines = text.trim().split(/\r?\n/);
-  if(!lines.length) return [];
+/* Max 2 per leg */
+const selections = { right: [], left: [] };
 
-  const headers = lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
-  const gi = key => headers.indexOf(key);
+function toggleColor(leg, color, btn) {
+    const arr = selections[leg];
 
-  // expected header names (lowercased)
-  const i_bird_id = gi("bird_id");
-  const i_mark_color = gi("mark_color");
-  const i_rt = gi("r_top") >= 0 ? gi("r_top") : gi("r_top".toLowerCase()); // robust
-  const i_rb = gi("r_bottom");
-  const i_lt = gi("l_top");
-  const i_lb = gi("l_bottom");
-  const i_territory = gi("territory");
-  const i_territory_name = gi("territory_name");
-  const i_name = gi("name");
-  const i_sex = gi("sex");
-  const i_age = gi("age");
-  const i_dist = gi("dist punt dal gal (m)"); // exact as you showed
-  const i_banded_on = gi("banded_on");
-
-  return lines.slice(1).map(row=>{
-    // split respecting quoted commas
-    const cols = [];
-    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>{
-      cols.push(x.replace(/^"|"$/g,'').trim());
-    });
-
-    return {
-      bird_id: cols[i_bird_id] || "",
-      mark_color: cols[i_mark_color] || "",
-      Rt: (cols[i_rt]||"").toLowerCase(),
-      Rb: (cols[i_rb]||"").toLowerCase(),
-      Lt: (cols[i_lt]||"").toLowerCase(),
-      Lb: (cols[i_lb]||"").toLowerCase(),
-      territory: cols[i_territory] || cols[i_territory_name] || "",
-      name: cols[i_name] || "",
-      sex: cols[i_sex] || "",
-      age: cols[i_age] || "",
-      dist: cols[i_dist] || "",
-      banded_on: cols[i_banded_on] || ""
-    };
-  });
-}
-
-/* ========== FILTERING ========== */
-function matches(b){
-  const leftOk = [b.Lt, b.Lb].filter(Boolean);
-  const rightOk = [b.Rt, b.Rb].filter(Boolean);
-  const L = [...leftSel], R = [...rightSel];
-
-  return (!L.length || L.every(x=> leftOk.includes(x))) &&
-         (!R.length || R.every(x=> rightOk.includes(x)));
-}
-
-/* ========== BASEROW LOGGING ========== */
-/* POST payload uses user_field_names=true field names:
-   bird_name, bird_id, action, latitude, longitude
-*/
-async function logBirdToBaserow(rowData, action){
-  // get position (graceful fallback to nulls)
-  const getPos = () => new Promise(resolve => {
-    if(!navigator.geolocation) return resolve({lat:null, lon:null});
-    const opts = { enableHighAccuracy: false, timeout: 8000, maximumAge: 0 };
-    navigator.geolocation.getCurrentPosition(
-      p => resolve({lat: Number(p.coords.latitude.toFixed(10)), lon: Number(p.coords.longitude.toFixed(10))}),
-      e => resolve({lat:null, lon:null}),
-      opts
-    );
-  });
-
-  showToast("Saving...");
-  const gps = await getPos();
-
-  const payload = {
-    bird_name: rowData.name || rowData.bird_id || "",
-    bird_id: rowData.bird_id || "",
-    action: action, // "sighted" or "maybe"
-    latitude: gps.lat,
-    longitude: gps.lon
-  };
-
-  try {
-    const resp = await fetch(BASEROW_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Authorization": `Token ${BASEROW_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if(!resp.ok){
-      const text = await resp.text().catch(()=>"");
-      console.error("Baserow error", resp.status, text);
-      showToast("Failed to save (see console).");
+    if (arr.includes(color)) {
+        selections[leg] = arr.filter(c => c !== color);
+        btn.classList.remove("selected");
     } else {
-      showToast("Saved ✓");
+        if (arr.length >= 2) return;
+        arr.push(color);
+        btn.classList.add("selected");
     }
-  } catch(err){
-    console.error("Network error saving to Baserow", err);
-    showToast("Network error (see console).");
-  }
+
+    filterBirds();
 }
 
-/* ========== RENDER / TABLE ========== */
-function renderTable(){
-  // if CSV not loaded yet
-  if(!birds.length){
-    res.innerHTML = "No data loaded.";
-    return;
-  }
+/* ---------------------------------------------
+   BIRD DATA (you already have this list)
+--------------------------------------------- */
 
-  const matched = birds.filter(matches);
+const birds = BIRD_DATA_PLACEHOLDER; 
+// I will fill this once you paste your bird list again.
 
-  if(!matched.length){
-    res.innerHTML = "<p>No matches.</p>";
-    return;
-  }
+/* Matching logic */
+function filterBirds() {
+    const res = document.getElementById("results");
+    res.innerHTML = "";
 
-  // Build table with DOM (safer than innerHTML for rows with listeners)
-  const table = document.createElement("table");
-  const thead = document.createElement("thead");
-  const thr = document.createElement("tr");
-  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/R↓ - L↑/L↓","Actions"].forEach(h => {
-    const th = document.createElement("th");
-    th.textContent = h;
-    thr.appendChild(th);
-  });
-  thead.appendChild(thr);
-  table.appendChild(thead);
+    const R_top = selections.right[0] || null;
+    const R_bottom = selections.right[1] || null;
+    const L_top = selections.left[0] || null;
+    const L_bottom = selections.left[1] || null;
 
-  const tbody = document.createElement("tbody");
+    const filtered = birds.filter(bird =>
+        (!R_top || bird.R_top === R_top) &&
+        (!R_bottom || bird.R_bottom === R_bottom) &&
+        (!L_top || bird.L_top === L_top) &&
+        (!L_bottom || bird.L_bottom === L_bottom)
+    );
 
-  matched.forEach(row => {
-    const tr = document.createElement("tr");
+    filtered.forEach(bird => {
+        const div = document.createElement("div");
+        div.className = "bird-entry";
+        div.id = `bird-${bird.bird_id}`;
 
-    // Name (bird_id)
-    const tdName = document.createElement("td");
-    tdName.innerHTML = `${escapeHtml(row.name)} <span class="small-muted">(${escapeHtml(row.bird_id)})</span>`;
-    tr.appendChild(tdName);
+        div.innerHTML = `
+            <strong>${bird.name}</strong><br>
+            ID: ${bird.bird_id}<br>
+            <small>R↑ ${bird.R_top}, R↓ ${bird.R_bottom}, L↑ ${bird.L_top}, L↓ ${bird.L_bottom}</small>
 
-    // Sex / Age (Banded)
-    const tdSex = document.createElement("td");
-    tdSex.textContent = `${row.sex || ""}${row.age ? " / "+row.age : ""}${row.banded_on ? " ("+row.banded_on+")" : ""}`;
-    tr.appendChild(tdSex);
+            <div class="sighting-buttons">
+                <button class="sighted" onclick="markSighting(${bird.bird_id}, 'sighted')">Sighted</button>
+                <button class="maybe" onclick="markSighting(${bird.bird_id}, 'maybe')">Maybe</button>
+            </div>
+        `;
 
-    // Territory (dist)
-    const tdTerr = document.createElement("td");
-    tdTerr.textContent = `${row.territory || ""} ${row.dist ? "(" + row.dist + " m)" : ""}`;
-    tr.appendChild(tdTerr);
-
-    // Colors column
-    const tdColors = document.createElement("td");
-    tdColors.innerHTML = `${colorSpan(row.Rt)}/${colorSpan(row.Rb)} - ${colorSpan(row.Lt)}/${colorSpan(row.Lb)}`;
-    tr.appendChild(tdColors);
-
-    // Actions (Sighted / Maybe)
-    const tdAct = document.createElement("td");
-
-    const btnSight = document.createElement("button");
-    btnSight.type = "button";
-    btnSight.className = "action-btn";
-    btnSight.textContent = "Sighted";
-    btnSight.addEventListener("click", () => logBirdToBaserow(row, "sighted"));
-
-    const btnMaybe = document.createElement("button");
-    btnMaybe.type = "button";
-    btnMaybe.className = "action-btn maybe";
-    btnMaybe.textContent = "Maybe";
-    btnMaybe.addEventListener("click", () => logBirdToBaserow(row, "maybe"));
-
-    tdAct.appendChild(btnSight);
-    tdAct.appendChild(btnMaybe);
-    tr.appendChild(tdAct);
-
-    tbody.appendChild(tr);
-  });
-
-  table.appendChild(tbody);
-  // replace results
-  res.innerHTML = "";
-  res.appendChild(table);
+        res.appendChild(div);
+    });
 }
 
-/* ========== Reset ========== */
-function resetAll(){
-  leftSel.clear();
-  rightSel.clear();
-  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
-  renderTable();
+/* Exclusive toggle */
+const marked = {}; // bird_id → "sighted" or "maybe"
+
+function markSighting(id, state) {
+    marked[id] = marked[id] === state ? null : state;
 }
 
-/* ========== INIT ========== */
-document.getElementById("resetBtn").addEventListener("click", resetAll);
-makeButtons("R", document.getElementById("rightButtons"));
-makeButtons("L", document.getElementById("leftButtons"));
+/* ---------------------------------------------
+   SUBMIT TO BASEROW
+--------------------------------------------- */
 
-/* load CSV (your GitHub Pages file) */
-const csvPath = "https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
-fetch(csvPath)
-  .then(r => {
-    if(!r.ok) throw new Error("Failed to fetch CSV: " + r.status);
-    return r.text();
-  })
-  .then(txt => {
-    birds = parseCSV(txt);
-    renderTable();
-  })
-  .catch(err => {
-    console.error(err);
-    res.innerHTML = `<p style="color:red">⚠️ Failed to load CSV: ${escapeHtml(err && err.message ? err.message : String(err))}</p>`;
-  });
+async function submitSightings() {
+    const token = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
+    const tableID = 742957;
+
+    if (Object.keys(marked).length === 0) {
+        alert("No birds selected."); 
+        return;
+    }
+
+    /* Get GPS */
+    let lat = null, lon = null;
+    try {
+        const pos = await new Promise((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject)
+        );
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+    } catch {
+        alert("Location not available – submitting without GPS.");
+    }
+
+    /* Send each marked bird */
+    for (const id of Object.keys(marked)) {
+        const state = marked[id];
+        if (!state) continue;
+
+        const row = birds.find(b => b.bird_id == id);
+
+        const payload = {
+            bird_name: row.name,
+            bird_id: row.bird_id,
+            action: state,
+            latitude: lat,
+            longitude: lon
+        };
+
+        await fetch(`https://api.baserow.io/api/database/rows/table/${tableID}/?user_field_names=true`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Token ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+    }
+
+    alert("Sightings submitted!");
+
+    resetAll();
+}
+
+/* ---------------------------------------------
+   RESET EVERYTHING
+--------------------------------------------- */
+
+function resetAll() {
+    selections.right = [];
+    selections.left = [];
+    marked = {};
+
+    document.querySelectorAll(".color-button").forEach(btn => btn.classList.remove("selected"));
+    document.getElementById("results").innerHTML = "";
+}
 
 </script>
+
 </body>
 </html>
