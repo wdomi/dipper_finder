@@ -145,7 +145,7 @@
 <header>
   <h1><img src="Johann.png" class="bird-img" alt="icon"> Dipper Finder</h1>
   <div class="top-actions">
-    <button class="reset-btn" id="resetColorsBtn">Reset – select up to 2 colors per leg</button>
+    <button class="reset-btn" id="resetColorsBtn">Reset</button>
     <div class="small-muted">Select up to 2 colors per leg</div>
   </div>
 </header>
@@ -397,7 +397,7 @@ function renderFilteredTable(){
   const table = document.createElement("table");
   const thead = document.createElement("thead");
   const trh = document.createElement("tr");
-  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/R↓ - L↑/L↓","Actions"].forEach(h=>{
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach(h=>{
     const th = document.createElement("th");
     th.textContent = h;
     trh.appendChild(th);
@@ -428,7 +428,7 @@ function renderFilteredTable(){
     // R/L codes
     const tdCodes = document.createElement("td");
     // show compact codes using mapping
-    const codesHtml = `${codePillFor(row.Rt)}/${codePillFor(row.Rb)} - ${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`;
+    const codesHtml = `${codePillFor(row.Rt).trim()}/${codePillFor(row.Rb).trim()}-${codePillFor(row.Lt).trim()}/${codePillFor(row.Lb).trim()}`;
     tdCodes.innerHTML = codesHtml;
     tr.appendChild(tdCodes);
 
