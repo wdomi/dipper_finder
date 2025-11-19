@@ -1,300 +1,223 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Dipper Finder</title>
-
 <style>
-    body {
-        font-family: sans-serif;
-        margin: 0;
-        padding: 10px;
-        background: #f6f6f6;
-    }
+  :root{
+    --muted:#666;
+    --accent:#2a4d69;
+    --ok:#4caf50;
+    --danger:#d9534f;
+  }
+  body{
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    margin:0;
+    padding:12px;
+    background:#f8f8f8;
+    color:#222;
+  }
 
-    h1 {
-        font-size: 26px;
-        margin-bottom: 8px;
-    }
+  header{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  h1{
+    font-size:20px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .bird-img{ width:36px; height:36px; object-fit:contain; }
 
-    .reset-btn {
-        margin-bottom: 16px;
-        margin-top: 4px;
-        padding: 8px 14px;
-        background: #ddd;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 15px;
-    }
+  /* Reset button under title */
+  .top-actions{ display:flex; gap:12px; align-items:center; }
+  .reset-btn{
+    background:#e6e6e6;
+    border:1px solid #bbb;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+  }
 
-    .leg-title {
-        margin-top: 6px;
-        margin-bottom: 2px; /* reduced whitespace */
-        font-weight: bold;
-    }
+  /* Color selector sections (reduced whitespace) */
+  .section{
+    background:white;
+    border-radius:10px;
+    padding:8px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.06);
+    margin:8px 0;
+  }
+  .leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
 
-    .color-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 6px;
-        margin-bottom: 10px;
-    }
+  .color-grid{
+    display:grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap:6px;
+    padding:4px;
+  }
+  button.color{
+    height:36px;
+    border-radius:8px;
+    border:1px solid rgba(0,0,0,0.12);
+    font-weight:700;
+    cursor:pointer;
+    color:white;
+  }
+  /* individual colors */
+  .alu{ background:gray; }
+  .red{ background:red; }
+  .yellow{ background:goldenrod; color:black; }
+  .green{ background:green; }
+  .blue{ background:steelblue; }
+  .black{ background:black; }
+  /* ensure white visible */
+  button.color.white{
+    background:white !important;
+    color:black !important;
+    border:1px solid #999;
+    font-weight:700;
+  }
+  .violet{ background:purple; }
+  .pink{ background:hotpink; color:black; }
 
-    .color-button {
-        width: 100%;
-        height: 38px;
-        border-radius: 6px;
-        border: 1px solid #aaa;
-        font-size: 12px;
-        color: #000;
-        cursor: pointer;
-    }
+  button.color.selected{ outline:3px solid #000; }
 
-    .selected {
-        outline: 3px solid #000;
-    }
+  /* Submit button - left aligned */
+  .submit-area{ margin-top:6px; }
+  .submit-btn{
+    background:var(--accent);
+    color:white;
+    padding:10px 14px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    font-size:15px;
+    text-align:left;
+    display:block; /* so left aligned */
+  }
 
-    .results {
-        margin-top: 8px;
-    }
+  /* Results / Table */
+  #results{ margin-top:10px; text-align:left; }
+  table{ width:100%; border-collapse:collapse; font-size:14px; }
+  th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
+  th{ background:#f0f6fa; text-align:left; font-weight:600; }
+  .small-muted{ color:var(--muted); font-size:12px; }
 
-    .bird-entry {
-        background: #fff;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-    }
+  /* action toggles */
+  .action-group{ display:flex; gap:8px; }
+  .toggle-btn{
+    padding:6px 10px;
+    border-radius:6px;
+    border:1px solid #bbb;
+    cursor:pointer;
+    background:#f4f4f4;
+    font-weight:600;
+  }
+  .toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
+  .toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
 
-    .sighting-buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 6px;
-    }
+  /* compact color code style */
+  .code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
 
-    .sighting-buttons button {
-        flex: 1;
-        padding: 6px;
-        font-size: 14px;
-        border-radius: 6px;
-        cursor: pointer;
-        border: none;
-    }
+  /* Toast */
+  .toast{
+    position:fixed; right:16px; bottom:16px;
+    background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none;
+  }
+  .toast.show{ display:block; }
 
-    .sighted {
-        background: #b7ffb7;
-    }
-
-    .maybe {
-        background: #ffe6a8;
-    }
-
-    .submit-btn {
-        margin-top: 14px;
-        padding: 10px 14px;
-        background: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 16px;
-        text-align: left; /* left aligned */
-        display: block;
-    }
-
+  /* responsive tweaks */
+  @media (max-width:520px){
+    .color-grid{ grid-template-columns: repeat(4, 1fr); }
+    th, td{ padding:6px 4px; font-size:13px; }
+    h1{ font-size:18px; }
+  }
 </style>
 </head>
 <body>
 
-<h1>Dipper Finder</h1>
+<header>
+  <h1><img src="Johann.png" class="bird-img" alt="icon"> Dipper Finder</h1>
+  <div class="top-actions">
+    <button class="reset-btn" id="resetColorsBtn">Reset – select up to 2 colors per leg</button>
+    <div class="small-muted">Select up to 2 colors per leg</div>
+  </div>
+</header>
 
-<button class="reset-btn" onclick="resetAll()">Reset – select up to 2 colors per leg</button>
-
-<div id="color-selectors">
-    <div class="leg-title">Right Leg</div>
-    <!-- Reduced whitespace -->
-    <div class="color-grid" id="right-leg-grid"></div>
-
-    <div class="leg-title">Left Leg</div>
-    <!-- Reduced whitespace -->
-    <div class="color-grid" id="left-leg-grid"></div>
+<!-- selectors -->
+<div class="section" aria-labelledby="right-leg">
+  <div class="leg-title" id="right-leg">Right Leg</div>
+  <div class="color-grid" id="rightButtons"></div>
 </div>
 
-<div class="results" id="results"></div>
+<div class="section" aria-labelledby="left-leg">
+  <div class="leg-title" id="left-leg">Left Leg</div>
+  <div class="color-grid" id="leftButtons"></div>
+</div>
 
-<button class="submit-btn" onclick="submitSightings()">Submit Sightings</button>
+<!-- submit area (left aligned) -->
+<div class="submit-area">
+  <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+</div>
+
+<!-- results -->
+<div id="results">Loading <b>view_birdsCSV_apps.csv</b>…</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
-/* ---------------------------------------------
-   COLOR SETUP
---------------------------------------------- */
-const colors = [
-    { name: "ylw", hex: "#fff700" },
-    { name: "alu", hex: "#d9d9d9" },
-    { name: "blk", hex: "#000000" },
-    { name: "red", hex: "#ff0000" },
-    { name: "grn", hex: "#00aa00" },
-    { name: "vlt", hex: "#9933ff" },
-    { name: "pnk", hex: "#ff82c6" },
-    { name: "blu", hex: "#0066ff" },
-    { name: "wht", hex: "#ffffff" }
-];
+/* ================== CONFIG ================== */
+// CSV location (repo root)
+const CSV_URL = "https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
 
-/* Render color buttons */
-function setupLegGrid(leg) {
-    const grid = document.getElementById(`${leg}-leg-grid`);
-    colors.forEach(color => {
-        const btn = document.createElement("button");
-        btn.className = "color-button";
-        btn.style.background = color.hex;
-        btn.textContent = color.name;
-        btn.onclick = () => toggleColor(leg, color.name, btn);
-        grid.appendChild(btn);
-    });
+// Baserow endpoint + create-only token (table 742957)
+const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
+const BASEROW_TOKEN = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
+
+// action option IDs in your single-select field
+const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
+
+/* ================== COLORS & MAPPINGS ================== */
+const colorButtons = ["alu","red","yellow","green","blue","black","white","violet","pink"];
+
+/* map CSV color values to compact display codes (and colors) */
+const colorCodeMap = {
+  "yellow": { code:"ylw", color:"goldenrod" },
+  "alu":    { code:"alu", color:"gray" },
+  "metal":  { code:"alu", color:"gray" }, // if CSV uses 'metal'
+  "black":  { code:"blk", color:"black" },
+  "red":    { code:"red", color:"red" },
+  "green":  { code:"grn", color:"green" },
+  "violet": { code:"vlt", color:"purple" },
+  "pink":   { code:"pnk", color:"hotpink" },
+  "blue":   { code:"blu", color:"steelblue" },
+  "white":  { code:"wht", color:"white" }
+};
+
+/* helper to map CSV color (possibly short/variant) to canonical key */
+function normalizeColorKey(s){
+  if(!s) return "";
+  s = String(s).toLowerCase().trim();
+  if(s === "metal") return "alu";
+  // some CSV values may be short like 'blu' or 'ylw'
+  if(s.startsWith("yl")) return "yellow";
+  if(s.startsWith("alu") || s === "alu") return "alu";
+  if(s.startsWith("blk") || s === "black") return "black";
+  if(s.startsWith("red")) return "red";
+  if(s.startsWith("gr") || s.startsWith("grn")) return "green";
+  if(s.startsWith("vio") || s === "vlt") return "violet";
+  if(s.startsWith("pn") || s === "pnk") return "pink";
+  if(s.startsWith("bl") || s === "blu" || s === "blue") return "blue";
+  if(s.startsWith("wh") || s === "wht") return "white";
+  return s;
 }
 
-setupLegGrid("right");
-setupLegGrid("left");
-
-/* Max 2 per leg */
-const selections = { right: [], left: [] };
-
-function toggleColor(leg, color, btn) {
-    const arr = selections[leg];
-
-    if (arr.includes(color)) {
-        selections[leg] = arr.filter(c => c !== color);
-        btn.classList.remove("selected");
-    } else {
-        if (arr.length >= 2) return;
-        arr.push(color);
-        btn.classList.add("selected");
-    }
-
-    filterBirds();
-}
-
-/* ---------------------------------------------
-   BIRD DATA (you already have this list)
---------------------------------------------- */
-
-const birds = BIRD_DATA_PLACEHOLDER; 
-// I will fill this once you paste your bird list again.
-
-/* Matching logic */
-function filterBirds() {
-    const res = document.getElementById("results");
-    res.innerHTML = "";
-
-    const R_top = selections.right[0] || null;
-    const R_bottom = selections.right[1] || null;
-    const L_top = selections.left[0] || null;
-    const L_bottom = selections.left[1] || null;
-
-    const filtered = birds.filter(bird =>
-        (!R_top || bird.R_top === R_top) &&
-        (!R_bottom || bird.R_bottom === R_bottom) &&
-        (!L_top || bird.L_top === L_top) &&
-        (!L_bottom || bird.L_bottom === L_bottom)
-    );
-
-    filtered.forEach(bird => {
-        const div = document.createElement("div");
-        div.className = "bird-entry";
-        div.id = `bird-${bird.bird_id}`;
-
-        div.innerHTML = `
-            <strong>${bird.name}</strong><br>
-            ID: ${bird.bird_id}<br>
-            <small>R↑ ${bird.R_top}, R↓ ${bird.R_bottom}, L↑ ${bird.L_top}, L↓ ${bird.L_bottom}</small>
-
-            <div class="sighting-buttons">
-                <button class="sighted" onclick="markSighting(${bird.bird_id}, 'sighted')">Sighted</button>
-                <button class="maybe" onclick="markSighting(${bird.bird_id}, 'maybe')">Maybe</button>
-            </div>
-        `;
-
-        res.appendChild(div);
-    });
-}
-
-/* Exclusive toggle */
-const marked = {}; // bird_id → "sighted" or "maybe"
-
-function markSighting(id, state) {
-    marked[id] = marked[id] === state ? null : state;
-}
-
-/* ---------------------------------------------
-   SUBMIT TO BASEROW
---------------------------------------------- */
-
-async function submitSightings() {
-    const token = "PrcSgbmmUfRH1repX8wmIeixWCGUV4X9";
-    const tableID = 742957;
-
-    if (Object.keys(marked).length === 0) {
-        alert("No birds selected."); 
-        return;
-    }
-
-    /* Get GPS */
-    let lat = null, lon = null;
-    try {
-        const pos = await new Promise((resolve, reject) =>
-            navigator.geolocation.getCurrentPosition(resolve, reject)
-        );
-        lat = pos.coords.latitude;
-        lon = pos.coords.longitude;
-    } catch {
-        alert("Location not available – submitting without GPS.");
-    }
-
-    /* Send each marked bird */
-    for (const id of Object.keys(marked)) {
-        const state = marked[id];
-        if (!state) continue;
-
-        const row = birds.find(b => b.bird_id == id);
-
-        const payload = {
-            bird_name: row.name,
-            bird_id: row.bird_id,
-            action: state,
-            latitude: lat,
-            longitude: lon
-        };
-
-        await fetch(`https://api.baserow.io/api/database/rows/table/${tableID}/?user_field_names=true`, {
-            method: "POST",
-            headers: {
-                "Authorization": `Token ${token}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(payload)
-        });
-    }
-
-    alert("Sightings submitted!");
-
-    resetAll();
-}
-
-/* ---------------------------------------------
-   RESET EVERYTHING
---------------------------------------------- */
-
-function resetAll() {
-    selections.right = [];
-    selections.left = [];
-    marked = {};
-
-    document.querySelectorAll(".color-button").forEach(btn => btn.classList.remove("selected"));
-    document.getElementById("results").innerHTML = "";
-}
-
-</script>
-
-</body>
-</html>
+/* build a compact code pill */
+function codePillFor(raw){
+  const key = no
