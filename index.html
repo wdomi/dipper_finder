@@ -246,12 +246,13 @@ async function requestLocation(){
 
 /* ================= Submit sightings ================= */
 document.getElementById("submitBtn").addEventListener("click", async () => {
+  // 1️⃣ Collect all selected birds
   const entries = [];
   for (const [bird_id, val] of perBirdSelection.entries()) {
     if (val === "sighted" || val === "maybe") {
-      const r = birds.find(b => b.bird_id === bird_id);
-      if (!r) continue;
-      entries.push({ row: r, action: val });
+      const row = birds.find(b => b.bird_id === bird_id);
+      if (!row) continue;
+      entries.push({ row, action: val });
     }
   }
   if (entries.length === 0) {
@@ -259,23 +260,43 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
     return;
   }
 
-  showToast("Getting location...");
-  // Always returns an object with lat/lon, even if denied
-  const gps = await requestLocation();
+  // 2️⃣ Request location directly inside click handler
+  let gps = { lat: null, lon: null };
+  if (navigator.geolocation) {
+    showToast("Getting location...");
+    try {
+      gps = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          pos => resolve({
+            lat: Number(pos.coords.latitude.toFixed(10)),
+            lon: Number(pos.coords.longitude.toFixed(10))
+          }),
+          err => {
+            console.warn("Geolocation error:", err);
+            alert("Location denied or unavailable. Coordinates will be empty.");
+            resolve({ lat: null, lon: null });
+          },
+          { timeout: 8000 }
+        );
+      });
+    } catch (err) {
+      console.warn("Geolocation failed:", err);
+    }
+  }
 
+  // 3️⃣ Submit all entries sequentially
   showToast("Submitting sightings...");
   let successCount = 0;
-
   for (const e of entries) {
     const payload = {
-      bird_name: e.row.name || "",
-      bird_id: e.row.bird_id || "",
+      bird_name: e.row.name,
+      bird_id: e.row.bird_id,
       action: e.action === "sighted" ? ACTION_IDS.sighted : ACTION_IDS.maybe,
-      latitude: gps.lat,   // will be null if denied
+      latitude: gps.lat,
       longitude: gps.lon
     };
 
-    console.log("Submitting payload:", payload); // <-- this will show what is being sent
+    console.log("Submitting payload:", payload); // debug
 
     try {
       const r = await fetch(BASEROW_ENDPOINT, {
@@ -286,7 +307,6 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
         },
         body: JSON.stringify(payload)
       });
-
       if (r.ok) successCount++;
       else {
         const txt = await r.text().catch(() => "");
@@ -302,6 +322,7 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
   renderFilteredTable();
 });
 
+  
 /* ================= Geolocation helper ================= */
 async function requestLocation() {
   if (!navigator.geolocation) {
