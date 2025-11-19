@@ -106,10 +106,23 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <div class="section" aria-labelledby="right-leg">
   <div class="leg-title" id="right-leg">Right Leg</div>
-  <div class="color-grid" id="topColors"></div>
-  <div class="color-grid" id="bottomColors"></div>
-</div>
-
+  <!-- Top row: 5 buttons -->
+  <div class="color-grid" id="topColors">
+    <button class="color alu">alu</button>
+    <button class="color red">red</button>
+    <button class="color blue">blue</button>
+    <button class="color pink">pink</button>
+    <button class="color white">white</button>
+  </div>
+  <!-- Bottom row: 4 buttons, last slot empty -->
+  <div class="color-grid bottom-row" id="bottomColors">
+    <button class="color yellow">yellow</button>
+    <button class="color green">green</button>
+    <button class="color violet">violet</button>
+    <button class="color black">black</button>
+    <div></div> <!-- empty slot -->
+  </div>
+  
 <div class="section" aria-labelledby="left-leg">
   <div class="leg-title" id="left-leg">Left Leg</div>
   <div class="color-grid" id="topColorsLeft"></div>
