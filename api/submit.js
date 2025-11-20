@@ -1,7 +1,5 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
   const BASEROW_ENDPOINT = "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
