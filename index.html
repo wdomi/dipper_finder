@@ -7,7 +7,6 @@
 <link rel="icon" href="/favicon.png" type="image/png">
 
 <style>
-/* --- styles unchanged --- */
 :root{
   --muted:#666;
   --accent:#2a4d69;
@@ -20,11 +19,23 @@ h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
 .reset-btn{ background:#e6e6e6; border:1px solid #bbb; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:14px; }
 .section{ background:white; border-radius:10px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0; }
 .leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
+
 .color-grid { display: grid; gap: 4px; padding: 2px; }
 .color-grid.top-row { grid-template-columns: repeat(5, 1fr); }
 .color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
-button.color { font-size: 12px; font-weight:700; padding: 2px 4px; height: 28px; border-radius: 6px; border:2px solid transparent; cursor:pointer; text-align:center; }
+
+button.color {
+  font-size: 12px;
+  font-weight:700;
+  padding: 2px 4px;
+  height: 28px;
+  border-radius: 6px;
+  border:2px solid transparent;
+  cursor:pointer;
+  text-align:center;
+}
 button.color.selected { border-color:#000; }
+
 .alu{ background:gray; color:white; }
 .red{ background:red; color:white; }
 .yellow{ background:goldenrod; color:white; }
@@ -34,22 +45,49 @@ button.color.selected { border-color:#000; }
 .violet{ background:purple; color:white; }
 .pink{ background:hotpink; color:white; }
 .white{ background:#eee; color:black; border:1px solid #999; }
+
 .submit-area{ margin-top:6px; }
+/* NEW: make button + link sit on one row */
+.submit-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+}
 .submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
+
+/* NEW: styling for the link on the right */
+.obs-link{
+  font-size:14px;
+  color:#555;
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+/* NEW: make “location will be requested” smaller + dark grey */
+.small-muted{
+  font-size:12px;
+  color:#555;
+}
+
 #results{ margin-top:10px; text-align:left; }
 table{ width:100%; border-collapse:collapse; font-size:14px; }
 th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
 th{ background:#f0f6fa; text-align:left; font-weight:600; }
 td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
+
 .action-group{ display:flex; gap:8px; }
 .action-group.vertical{ flex-direction:column; gap:4px; }
 .action-group.vertical .toggle-btn{ width:100%; }
 .toggle-btn{ padding:6px 10px; border-radius:6px; border:1px solid #bbb; cursor:pointer; background:#f4f4f4; font-weight:600; }
 .toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
 .toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
+
 .code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
 .toast{ position:fixed; right:16px; bottom:16px; background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none; }
 .toast.show{ display:block; }
+
 @media (max-width:520px){
   .color-grid.top-row, .color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
   th, td{ padding:6px 4px; font-size:13px; }
@@ -60,27 +98,32 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <body>
 <header>
-  <h1><img src="/Johann.png" class="bird-img"> Dipper Finder</h1>
+  <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper Finder</h1>
   <div class="top-actions">
     <button class="reset-btn" id="resetColorsBtn">Reset</button>
     <div class="small-muted">Select up to 2 colors per leg</div>
   </div>
 </header>
 
-<div class="section">
-  <div class="leg-title">Right Leg</div>
+<div class="section" aria-labelledby="right-leg">
+  <div class="leg-title" id="right-leg">Right Leg</div>
   <div class="color-grid top-row" id="topColors"></div>
   <div class="color-grid bottom-row" id="bottomColors"></div>
 </div>
 
-<div class="section">
-  <div class="leg-title">Left Leg</div>
+<div class="section" aria-labelledby="left-leg">
+  <div class="leg-title" id="left-leg">Left Leg</div>
   <div class="color-grid top-row" id="topColorsLeft"></div>
   <div class="color-grid bottom-row" id="bottomColorsLeft"></div>
 </div>
 
 <div class="submit-area">
-  <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+  <!-- NEW: button + link row -->
+  <div class="submit-row">
+    <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+    <a href="observations.html" class="obs-link">View last observations</a>
+  </div>
+  <!-- Text now styled via .small-muted (smaller, dark grey) -->
   <div class="small-muted">Your location will be requested when submitting sightings.</div>
 </div>
 
@@ -88,36 +131,56 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 <div id="toast" class="toast"></div>
 
 <script>
-/* ——— IMPORTANT CHANGE HERE ——— */
-const CSV_URL = "/view_birdsCSV_apps.csv";
-/* -------------------------------- */
-
+/* CSV is served locally from the project root on Vercel */
+const CSV_URL="/view_birdsCSV_apps.csv";
 const ACTION_IDS={sighted:4519311, maybe:4519312};
 const topColors=["alu","red","blue","pink","white"];
 const bottomColors=["yellow","green","violet","black"];
-const colorCodeMap={yellow:{code:"ylw",color:"goldenrod"}, alu:{code:"alu",color:"gray"}, metal:{code:"alu",color:"gray"}, black:{code:"blk",color:"#111"}, red:{code:"red",color:"red"}, green:{code:"grn",color:"green"}, violet:{code:"vlt",color:"purple"}, pink:{code:"pnk",color:"hotpink"}, blue:{code:"blu",color:"steelblue"}, white:{code:"wht",color:"#eee"}};
+const colorCodeMap={
+  yellow:{code:"ylw",color:"goldenrod"},
+  alu:{code:"alu",color:"gray"},
+  metal:{code:"alu",color:"gray"},
+  black:{code:"blk",color:"#111"},
+  red:{code:"red",color:"red"},
+  green:{code:"grn",color:"green"},
+  violet:{code:"vlt",color:"purple"},
+  pink:{code:"pnk",color:"hotpink"},
+  blue:{code:"blu",color:"steelblue"},
+  white:{code:"wht",color:"#eee"}
+};
 
-function normalizeColorKey(s){ if(!s) return ""; s=String(s).toLowerCase().trim();
-  if(s==="metal") return "alu"; if(s==="black"||s.startsWith("blk")) return "black";
-  if(s.startsWith("yl")) return "yellow"; if(s.startsWith("alu")) return "alu";
-  if(s.startsWith("red")) return "red"; if(s.startsWith("gr")) return "green";
+function normalizeColorKey(s){
+  if(!s) return "";
+  s=String(s).toLowerCase().trim();
+  if(s==="metal") return "alu";
+  if(s==="black"||s.startsWith("blk")) return "black";
+  if(s.startsWith("yl")) return "yellow";
+  if(s.startsWith("alu")) return "alu";
+  if(s.startsWith("red")) return "red";
+  if(s.startsWith("gr")) return "green";
   if(s.startsWith("vio")||s==="vlt") return "violet";
   if(s.startsWith("pn")||s==="pnk") return "pink";
   if(s.startsWith("bl")||s==="blu") return "blue";
-  if(s.startsWith("wh")||s==="wht") return "white"; return s;
+  if(s.startsWith("wh")||s==="wht") return "white";
+  return s;
 }
 
 function codePillFor(raw){
   const key=normalizeColorKey(raw);
   const meta=colorCodeMap[key];
-  if(!meta) return `<span class="code-pill">${raw||""}</span>`;
+  if(!meta) return `<span class="code-pill">${escapeHtml(raw||"")}</span>`;
   const textColor=(meta.code==="wht")?"#000":meta.color;
   const bg=(meta.code==="wht")?"#eee":"transparent";
   return `<span class="code-pill" style="color:${textColor};background:${bg}">${meta.code}</span>`;
 }
 
-function escapeHtml(s){ return String(s||"").replaceAll("&","&amp;")
-.replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+function escapeHtml(s){
+  return String(s||"").replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
 
 const perBirdSelection=new Map();
 let birds=[];
@@ -125,7 +188,9 @@ const resultsEl=document.getElementById("results");
 
 function makeColorButton(name){
   const b=document.createElement("button");
-  b.type="button"; b.className="color "+name; b.textContent=name;
+  b.type="button";
+  b.className="color "+name;
+  b.textContent=name;
   if(name==="white") b.classList.add("white");
   return b;
 }
@@ -135,19 +200,25 @@ function populateColors(gridId, colors, sideArr){
   const grid=document.getElementById(gridId);
   colors.forEach(c=>{
     const b=makeColorButton(c);
-    b.addEventListener("click", ()=> toggleColorSelection(sideArr,c,b) );
+    b.addEventListener("click", ()=>{ toggleColorSelection(sideArr,c,b); });
     grid.appendChild(b);
   });
 }
 function toggleColorSelection(arr, color, btn){
-  const i=arr.indexOf(color);
-  if(i>=0){ arr.splice(i,1); btn.classList.remove("selected"); }
-  else if(arr.length<2){ arr.push(color); btn.classList.add("selected"); }
+  const idx=arr.indexOf(color);
+  if(idx>=0){
+    arr.splice(idx,1);
+    btn.classList.remove("selected");
+  } else if(arr.length<2){
+    arr.push(color);
+    btn.classList.add("selected");
+  }
   renderFilteredTable();
 }
 
 document.getElementById("resetColorsBtn").addEventListener("click", ()=>{
-  rightSel.splice(0); leftSel.splice(0);
+  rightSel.splice(0);
+  leftSel.splice(0);
   document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
   renderFilteredTable();
 });
@@ -159,91 +230,115 @@ populateColors("bottomColorsLeft", bottomColors, leftSel);
 
 function parseCSV(text){
   const lines=text.trim().split(/\r?\n/);
-  if(!lines.length) return [];
+  if(lines.length===0) return [];
   const headers=lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
-  const gi=k=>headers.indexOf(k);
-  const i_bird_id=gi("bird_id"), i_name=gi("name"), i_sex=gi("sex"), i_age=gi("age"),
-        i_r_top=gi("r_top"), i_r_bottom=gi("r_bottom"), i_l_top=gi("l_top"), i_l_bottom=gi("l_bottom"),
-        i_territory=gi("territory"), i_territory_name=gi("territory_name"),
-        i_dist=gi("dist punt dal gal (m)"), i_banded_on=gi("banded_on");
-
+  const gi=key=>headers.indexOf(key);
+  const i_bird_id=gi("bird_id"),i_name=gi("name"),i_sex=gi("sex"),i_age=gi("age"),
+        i_r_top=gi("r_top"),i_r_bottom=gi("r_bottom"),i_l_top=gi("l_top"),i_l_bottom=gi("l_bottom"),
+        i_territory=gi("territory"),i_territory_name=gi("territory_name"),
+        i_dist=gi("dist punt dal gal (m)"),i_banded_on=gi("banded_on");
   return lines.slice(1).map(row=>{
-    const cols=[]; row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'')));
+    const cols=[];
+    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'').trim()));
     return {
-      bird_id:cols[i_bird_id]||"", name:cols[i_name]||"", sex:cols[i_sex]||"", age:cols[i_age]||"",
-      Rt:(cols[i_r_top]||"").toLowerCase(), Rb:(cols[i_r_bottom]||"").toLowerCase(),
-      Lt:(cols[i_l_top]||"").toLowerCase(), Lb:(cols[i_l_bottom]||"").toLowerCase(),
-      territory:cols[i_territory]||cols[i_territory_name]||"", dist:cols[i_dist]||"", banded_on:cols[i_banded_on]||""
+      bird_id:cols[i_bird_id]||"",
+      name:cols[i_name]||"",
+      sex:cols[i_sex]||"",
+      age:cols[i_age]||"",
+      Rt:(cols[i_r_top]||"").toLowerCase(),
+      Rb:(cols[i_r_bottom]||"").toLowerCase(),
+      Lt:(cols[i_l_top]||"").toLowerCase(),
+      Lb:(cols[i_l_bottom]||"").toLowerCase(),
+      territory:cols[i_territory]||cols[i_territory_name]||"",
+      dist:cols[i_dist]||"",
+      banded_on:cols[i_banded_on]||""
     };
   });
 }
 
 function matchesRow(row){
-  const L=[normalizeColorKey(row.Lt),normalizeColorKey(row.Lb)].filter(Boolean);
-  const R=[normalizeColorKey(row.Rt),normalizeColorKey(row.Rb)].filter(Boolean);
-  const Rs=rightSel.slice(), Ls=leftSel.slice();
-  return (Rs.length===0||Rs.every(s=>R.includes(s))) &&
-         (Ls.length===0||Ls.every(s=>L.includes(s)));
+  const leftOk=[normalizeColorKey(row.Lt),normalizeColorKey(row.Lb)].filter(Boolean);
+  const rightOk=[normalizeColorKey(row.Rt),normalizeColorKey(row.Rb)].filter(Boolean);
+  const Rsel=rightSel.filter(Boolean);
+  const Lsel=leftSel.filter(Boolean);
+  return (Rsel.length===0||Rsel.every(sel=>rightOk.includes(sel))) &&
+         (Lsel.length===0||Lsel.every(sel=>leftOk.includes(sel)));
 }
 
 function renderFilteredTable(){
-  if(!birds.length){ resultsEl.innerHTML="<p>No data loaded yet.</p>"; return; }
+  if(!birds.length){
+    resultsEl.innerHTML="<p class='small-muted'>No data loaded yet.</p>";
+    return;
+  }
   const matched=birds.filter(matchesRow);
-  if(!matched.length){ resultsEl.innerHTML="<p>No matches.</p>"; return; }
+  if(matched.length===0){
+    resultsEl.innerHTML="<p class='small-muted'>No matches.</p>";
+    return;
+  }
 
   const table=document.createElement("table");
-  table.innerHTML = `
-    <thead><tr>
-      <th>Name (bird_id)</th>
-      <th>Sex / Age (Banded)</th>
-      <th>Territory (Dist m)</th>
-      <th class="codes-column">R↑/↓ - L↑/↓</th>
-      <th>Actions</th>
-    </tr></thead>
-  `;
-  const tbody=document.createElement("tbody");
+  const thead=document.createElement("thead");
+  const trh=document.createElement("tr");
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+    const th=document.createElement("th");
+    th.textContent=h;
+    if(i===3) th.classList.add("codes-column");
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
 
+  const tbody=document.createElement("tbody");
   matched.forEach(row=>{
     const tr=document.createElement("tr");
+    const tdName=document.createElement("td");
+    tdName.innerHTML=`${escapeHtml(row.name||"")} <div class="small-muted">(${escapeHtml(row.bird_id||"")})</div>`;
+    tr.appendChild(tdName);
 
-    tr.innerHTML = `
-      <td>${escapeHtml(row.name)}<div class="small-muted">(${escapeHtml(row.bird_id)})</div></td>
-      <td>${row.sex||""}${row.age?` / ${row.age}`:""}${row.banded_on?` (${row.banded_on})`:""}</td>
-      <td>${row.territory||""}${row.dist?` (${row.dist} m)`:""}</td>
-      <td class="codes-column">
-        ${codePillFor(row.Rt)}/${codePillFor(row.Rb)}
-        -
-        ${codePillFor(row.Lt)}/${codePillFor(row.Lb)}
-      </td>
-    `;
+    const tdSex=document.createElement("td");
+    tdSex.textContent=`${row.sex||""}${row.age?" / "+row.age:""}${row.banded_on?" ("+row.banded_on+")":""}`;
+    tr.appendChild(tdSex);
 
-    const actions=document.createElement("td");
+    const tdTerr=document.createElement("td");
+    tdTerr.textContent=`${row.territory||""}${row.dist?" ("+row.dist+" m)":""}`;
+    tr.appendChild(tdTerr);
+
+    const tdCodes=document.createElement("td");
+    tdCodes.classList.add("codes-column");
+    tdCodes.innerHTML=`${codePillFor(row.Rt)}/${codePillFor(row.Rb)}-${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`;
+    tr.appendChild(tdCodes);
+
+    const tdActions=document.createElement("td");
     const wrap=document.createElement("div");
     wrap.className="action-group vertical";
 
     const btnSight=document.createElement("button");
-    btnSight.type="button"; btnSight.className="toggle-btn sighted"; btnSight.textContent="Sighted";
+    btnSight.type="button";
+    btnSight.className="toggle-btn sighted";
+    btnSight.textContent="Sighted";
 
     const btnMaybe=document.createElement("button");
-    btnMaybe.type="button"; btnMaybe.className="toggle-btn maybe"; btnMaybe.textContent="Maybe";
+    btnMaybe.type="button";
+    btnMaybe.className="toggle-btn maybe";
+    btnMaybe.textContent="Maybe";
 
-    const state=perBirdSelection.get(row.bird_id);
-    if(state==="sighted") btnSight.classList.add("toggle-on");
-    if(state==="maybe") btnMaybe.classList.add("toggle-on");
+    const cur=perBirdSelection.get(row.bird_id)||null;
+    if(cur==="sighted") btnSight.classList.add("toggle-on");
+    if(cur==="maybe") btnMaybe.classList.add("toggle-on");
 
-    btnSight.onclick=()=>{
-      perBirdSelection.set(row.bird_id, state==="sighted"?null:"sighted");
+    btnSight.addEventListener("click", ()=>{
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted");
       renderFilteredTable();
-    };
-    btnMaybe.onclick=()=>{
-      perBirdSelection.set(row.bird_id, state==="maybe"?null:"maybe");
+    });
+    btnMaybe.addEventListener("click", ()=>{
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe");
       renderFilteredTable();
-    };
+    });
 
     wrap.appendChild(btnSight);
     wrap.appendChild(btnMaybe);
-    actions.appendChild(wrap);
-    tr.appendChild(actions);
+    tdActions.appendChild(wrap);
+    tr.appendChild(tdActions);
 
     tbody.appendChild(tr);
   });
@@ -258,23 +353,27 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
   for(const [bird_id,val] of perBirdSelection.entries()){
     if(val==="sighted"||val==="maybe"){
       const row=birds.find(b=>b.bird_id===bird_id);
-      if(row) entries.push({row,action:val});
+      if(!row) continue;
+      entries.push({row,action:val});
     }
   }
-  if(!entries.length){ alert("No selected birds to submit."); return; }
+  if(entries.length===0){
+    alert("No selected birds to submit.");
+    return;
+  }
 
   let gps={lat:null, lon:null};
   if(navigator.geolocation){
-    gps = await new Promise(resolve=>{
+    gps=await new Promise(resolve=>{
       navigator.geolocation.getCurrentPosition(
-        pos=>resolve({lat:+pos.coords.latitude.toFixed(10), lon:+pos.coords.longitude.toFixed(10)}),
+        pos=>resolve({lat:Number(pos.coords.latitude.toFixed(10)), lon:Number(pos.coords.longitude.toFixed(10))}),
         ()=>resolve({lat:null, lon:null}),
         {timeout:8000}
       );
     });
   }
 
-  let success=0;
+  let successCount=0;
   for(const e of entries){
     const payload={
       bird_name:e.row.name,
@@ -286,14 +385,20 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
     try{
       const r=await fetch("/api/submit",{
         method:"POST",
-        headers:{"Content-Type":"application/json"},
+        headers:{ "Content-Type":"application/json" },
         body:JSON.stringify(payload)
       });
-      if(r.ok) success++;
-    }catch{}
+      if(r.ok){
+        successCount++;
+      } else {
+        const txt=await r.text().catch(()=> "");
+        console.error("Baserow save error", r.status, txt);
+      }
+    }catch(err){
+      console.error("Network error posting to Baserow", err);
+    }
   }
-
-  showToast(`Submitted ${success}/${entries.length}`);
+  showToast(`Submitted ${successCount}/${entries.length}`);
   perBirdSelection.clear();
   renderFilteredTable();
 });
@@ -306,10 +411,12 @@ function showToast(msg,t=3000){
 }
 
 fetch(CSV_URL)
-  .then(r=>r.text())
+  .then(r=>r.ok?r.text():Promise.reject(r.statusText))
   .then(txt=>{ birds=parseCSV(txt); renderFilteredTable(); })
-  .catch(()=>{ resultsEl.innerHTML="<p style='color:red'>Failed to load CSV.</p>"; });
-
+  .catch(err=>{
+    resultsEl.innerHTML=`<p style="color:crimson">⚠️ Failed to load CSV: ${escapeHtml(String(err))}</p>`;
+    console.error(err);
+  });
 </script>
 </body>
 </html>
