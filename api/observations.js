@@ -5,10 +5,10 @@ export default async function handler(req, res) {
 
   const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
   if (!BASEROW_TOKEN) {
-    return res.status(500).json({ error: "Missing BASEROW_TOKEN" });
+    return res.status(500).json({ error: "BASEROW_TOKEN not configured" });
   }
 
-  // FIX: removed user_field_names=true, uses internal field names
+  // FIXED: removed user_field_names=true so order_by=-id works
   const BASEROW_ENDPOINT =
     "https://api.baserow.io/api/database/rows/table/742957/?order_by=-id&page_size=100";
 
@@ -17,20 +17,20 @@ export default async function handler(req, res) {
       method: "GET",
       headers: {
         Authorization: "Token " + BASEROW_TOKEN,
-        "Content-Type": "application/json",
       },
     });
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      return res.status(response.status).json({ error: text });
+      return res
+        .status(response.status)
+        .json({ error: text || "Baserow error" });
     }
 
     const data = await response.json();
-    return res.status(200).json({ results: data.results || [] });
-
+    res.status(200).json({ results: data.results || [] });
   } catch (err) {
-    console.error("API /observations error:", err);
-    return res.status(500).json({ error: "Server error" });
+    console.error("Error fetching observations from Baserow", err);
+    res.status(500).json({ error: "Server error" });
   }
 }
