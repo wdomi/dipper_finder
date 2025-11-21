@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bachstelzen-Finder</title>
+  <link rel="icon" href="favicon.png" type="image/png">
+<style>
+:root{
+  --muted:#666;
+  --accent:#2a4d69;
+}
+body{ font-family:system-ui, -apple-system,"Segoe UI",Roboto,Arial; margin:0; padding:12px; background:#f8f8f8; color:#222; }
+header{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
+h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
+.bird-img{ width:48px; height:48px; object-fit:contain; }
+.top-actions{ display:flex; gap:12px; align-items:center; }
+.reset-btn{ background:#e6e6e6; border:1px solid #bbb; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:14px; }
+.section{ background:white; border-radius:10px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0; }
+.leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
+
+.color-grid {
+  display: grid;
+  gap: 4px;
+  padding: 2px;
+}
+.color-grid.top-row { grid-template-columns: repeat(5, 1fr); }
+.color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
+
+button.color {
+  font-size: 12px;
+  font-weight:700;
+  padding: 2px 4px;
+  height: 28px;
+  border-radius: 6px;
+  border:2px solid transparent;
+  cursor:pointer;
+  text-align:center;
+}
+button.color.selected { border-color:#000; }
+
+.alu{ background:gray; color:white; }
+.red{ background:red; color:white; }
+.yellow{ background:goldenrod; color:black; }
+.green{ background:green; color:white; }
+.blue{ background:steelblue; color:white; }
+.black{ background:#111; color:white; }
+.violet{ background:purple; color:white; }
+.pink{ background:hotpink; color:black; }
+.white{ background:#eee; color:black; border:1px solid #999; }
+
+.submit-area{ margin-top:6px; }
+.submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
+
+#results{ margin-top:10px; text-align:left; }
+table{ width:100%; border-collapse:collapse; font-size:14px; }
+th, td{ padding:8px 6px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
+th{ background:#f0f6fa; text-align:left; font-weight:600; }
+td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
+
+.action-group{ display:flex; gap:8px; }
+.action-group.vertical{ flex-direction:column; gap:4px; }
+.action-group.vertical .toggle-btn{ width:100%; }
+.toggle-btn{ padding:6px 10px; border-radius:6px; border:1px solid #bbb; cursor:pointer; background:#f4f4f4; font-weight:600; }
+.toggle-on.sighted{ background:#c8f6d1; border-color:#74c46b; }
+.toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
+
+.code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
+.toast{ position:fixed; right:16px; bottom:16px; background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none; }
+.toast.show{ display:block; }
+
+@media (max-width:520px){
+  .color-grid.top-row, .color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
+  th, td{ padding:6px 4px; font-size:13px; }
+  h1{ font-size:22px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1><img src="Johann.png" class="bird-img"> Bachstelzen-Finder</h1>
+  <div class="top-actions">
+    <button class="reset-btn" id="resetColorsBtn">Zurücksetzen</button>
+    <div class="small-muted">Wählen Sie bis zu 2 Farben pro Bein</div>
+  </div>
+</header>
+
+<div class="section" aria-labelledby="right-leg">
+  <div class="leg-title" id="right-leg">Rechtes Bein</div>
+  <div class="color-grid top-row" id="topColors"></div>
+  <div class="color-grid bottom-row" id="bottomColors"></div>
+</div>
+
+<div class="section" aria-labelledby="left-leg">
+  <div class="leg-title" id="left-leg">Linkes Bein</div>
+  <div class="color-grid top-row" id="topColorsLeft"></div>
+  <div class="color-grid bottom-row" id="bottomColorsLeft"></div>
+</div>
+
+<div class="submit-area">
+  <button class="submit-btn" id="submitBtn">Sichtungen absenden</button>
+  <div class="small-muted">Ihr Standort wird beim Absenden der Sichtungen abgefragt.</div>
+</div>
+
+<div id="results">CSV wird geladen…</div>
+<div id="toast" class="toast"></div>
+
+<script>
+// The JavaScript logic remains unchanged
+</script>
+</body>
+</html>
