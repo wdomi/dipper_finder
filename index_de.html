@@ -209,7 +209,7 @@ function renderFilteredTable(){
   const table=document.createElement("table");
   const thead=document.createElement("thead");
   const trh=document.createElement("tr");
-  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+  ["Name (Vogel_ID)","Geschlecht / Alter (beringt am)","Revier (Abstand Punt dal Gal)","R↑/↓ - L↑/↓","Option"].forEach((h,i)=>{
     const th=document.createElement("th"); th.textContent=h; if(i===3) th.classList.add("codes-column"); trh.appendChild(th);
   });
   thead.appendChild(trh); table.appendChild(thead);
@@ -223,8 +223,8 @@ function renderFilteredTable(){
     const tdCodes=document.createElement("td"); tdCodes.classList.add("codes-column"); tdCodes.innerHTML=`${codePillFor(row.Rt)}/${codePillFor(row.Rb)}-${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`; tr.appendChild(tdCodes);
     const tdActions=document.createElement("td");
     const wrap=document.createElement("div"); wrap.className="action-group vertical";
-    const btnSight=document.createElement("button"); btnSight.type="button"; btnSight.className="toggle-btn sighted"; btnSight.textContent="Sighted";
-    const btnMaybe=document.createElement("button"); btnMaybe.type="button"; btnMaybe.className="toggle-btn maybe"; btnMaybe.textContent="Maybe";
+    const btnSight=document.createElement("button"); btnSight.type="button"; btnSight.className="toggle-btn sighted"; btnSight.textContent="beobachtet";
+    const btnMaybe=document.createElement("button"); btnMaybe.type="button"; btnMaybe.className="toggle-btn maybe"; btnMaybe.textContent="unsicher";
     const cur=perBirdSelection.get(row.bird_id)||null; if(cur==="sighted") btnSight.classList.add("toggle-on"); if(cur==="maybe") btnMaybe.classList.add("toggle-on");
     btnSight.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted"); renderFilteredTable(); });
     btnMaybe.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe"); renderFilteredTable(); });
