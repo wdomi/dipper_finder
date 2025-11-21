@@ -8,9 +8,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Missing BASEROW_TOKEN" });
   }
 
-  // Fetch the 100 most recent rows from Baserow
+  // FIX: removed user_field_names=true, uses internal field names
   const BASEROW_ENDPOINT =
-    "https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true&order_by=-id&page_size=100";
+    "https://api.baserow.io/api/database/rows/table/742957/?order_by=-id&page_size=100";
 
   try {
     const response = await fetch(BASEROW_ENDPOINT, {
