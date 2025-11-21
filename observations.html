@@ -94,17 +94,13 @@ th{
   table, thead, tbody, th, td, tr{
     display:block;
   }
-  thead{
-    display:none;
-  }
+  thead{ display:none; }
   tr{
     margin-bottom:10px;
     border-bottom:1px solid #333;
     padding-bottom:6px;
   }
-  td{
-    padding:4px 0;
-  }
+  td{ padding:4px 0; }
   td::before{
     content:attr(data-label) ": ";
     font-weight:600;
@@ -131,22 +127,18 @@ th{
 </div>
 
 <script>
+// Values set in your Baserow table (ID numbers)
 const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
-  // Handle both numeric IDs and Baserow select objects
   if (action && typeof action === "object") {
     if (action.value) return action.value;
-    if (typeof action.id !== "undefined") {
-      if (action.id === ACTION_IDS.sighted) return "Sighted";
-      if (action.id === ACTION_IDS.maybe) return "Maybe";
-      return "Action " + action.id;
-    }
+    if (action.id === ACTION_IDS.sighted) return "Sighted";
+    if (action.id === ACTION_IDS.maybe) return "Maybe";
   }
   if (action === ACTION_IDS.sighted) return "Sighted";
   if (action === ACTION_IDS.maybe) return "Maybe";
-  if (action == null) return "";
-  return String(action);
+  return "";
 }
 
 function getActionClass(action) {
@@ -166,17 +158,10 @@ function formatCoord(value) {
   return n.toFixed(5);
 }
 
-function goBack() {
-  // If opened as a separate window by script, try to close it
-  if (window.opener) {
-    window.close();
-  } else {
-    // Otherwise just go back to main finder
-    window.location.href = "index.html";
-  }
-}
-
-document.getElementById("backBtn").addEventListener("click", goBack);
+// Back button → go to root
+document.getElementById("backBtn").addEventListener("click", () => {
+  window.location.href = "/";
+});
 
 const statusEl = document.getElementById("status");
 const tableContainer = document.getElementById("tableContainer");
@@ -190,7 +175,7 @@ fetch("/api/observations")
     const rows = data.results || [];
 
     if (!rows.length) {
-      statusEl.textContent = "No observations found yet.";
+      statusEl.textContent = "No observations yet.";
       tableContainer.innerHTML = "";
       return;
     }
@@ -198,55 +183,52 @@ fetch("/api/observations")
     statusEl.textContent = "Showing " + rows.length + " most recent observations.";
 
     const table = document.createElement("table");
-    const thead = document.createElement("thead");
-    thead.innerHTML = `
-      <tr>
-        <th>ID</th>
-        <th>Bird</th>
-        <th>Action</th>
-        <th>Location</th>
-      </tr>
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Bird</th>
+          <th>Action</th>
+          <th>Location</th>
+        </tr>
+      </thead>
     `;
-    table.appendChild(thead);
 
     const tbody = document.createElement("tbody");
 
     rows.forEach(row => {
       const tr = document.createElement("tr");
 
+      // Row ID
       const idCell = document.createElement("td");
       idCell.setAttribute("data-label", "ID");
-      idCell.innerHTML = String(row.id ?? "");
+      idCell.textContent = row.id ?? "";
       tr.appendChild(idCell);
 
+      // Bird
       const birdCell = document.createElement("td");
       birdCell.setAttribute("data-label", "Bird");
-      const name = row.bird_name || "";
-      const birdId = row.bird_id || "";
       birdCell.innerHTML = `
-        <div>${name || "(unnamed)"}</div>
-        <div class="small">${birdId ? "(" + birdId + ")" : ""}</div>
+        <div>${row.bird_name || "(unnamed)"}</div>
+        <div class="small">${row.bird_id ? "(" + row.bird_id + ")" : ""}</div>
       `;
       tr.appendChild(birdCell);
 
+      // Action
       const actionCell = document.createElement("td");
       actionCell.setAttribute("data-label", "Action");
       const cls = getActionClass(row.action);
       const label = getActionLabel(row.action);
-      actionCell.innerHTML = label
-        ? \`<span class="\${cls}">\${label}</span>\`
-        : "";
+      actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
       tr.appendChild(actionCell);
 
+      // Location
       const locCell = document.createElement("td");
       locCell.setAttribute("data-label", "Location");
       const lat = formatCoord(row.latitude);
       const lon = formatCoord(row.longitude);
-      if (lat || lon) {
-        locCell.innerHTML = \`\${lat || "?"}, \${lon || "?"}\`;
-      } else {
-        locCell.innerHTML = '<span class="small">No coordinates</span>';
-      }
+      locCell.textContent = lat || lon ? `${lat || "?"}, ${lon || "?"}` : "No coordinates";
       tr.appendChild(locCell);
 
       tbody.appendChild(tr);
