@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dipper Finder – Recent Observations</title>
+<link rel="icon" href="/favicon.png" type="image/png">
+
+<style>
+body{
+  font-family:system-ui, -apple-system,"Segoe UI",Roboto,Arial;
+  margin:0;
+  padding:16px;
+  background:#111;
+  color:#f5f5f5;
+}
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+h1{
+  font-size:22px;
+  margin:0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.subtitle{
+  font-size:13px;
+  color:#aaa;
+}
+.back-btn{
+  padding:8px 12px;
+  border-radius:999px;
+  border:1px solid #555;
+  background:#222;
+  color:#f5f5f5;
+  cursor:pointer;
+  font-size:14px;
+}
+.back-btn:hover{
+  background:#333;
+}
+.card{
+  background:#1b1b1b;
+  border-radius:10px;
+  padding:12px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.8);
+}
+.status{
+  font-size:13px;
+  margin-bottom:10px;
+  color:#bbb;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+th, td{
+  padding:8px 6px;
+  border-bottom:1px solid #333;
+  vertical-align:middle;
+}
+th{
+  text-align:left;
+  background:#181818;
+  font-weight:600;
+}
+.badge{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+}
+.badge-sighted{
+  background:#244f2a;
+  color:#c7f5cf;
+}
+.badge-maybe{
+  background:#5a4a21;
+  color:#ffe9a3;
+}
+.small{
+  font-size:11px;
+  color:#999;
+}
+@media (max-width:600px){
+  table, thead, tbody, th, td, tr{
+    display:block;
+  }
+  thead{
+    display:none;
+  }
+  tr{
+    margin-bottom:10px;
+    border-bottom:1px solid #333;
+    padding-bottom:6px;
+  }
+  td{
+    padding:4px 0;
+  }
+  td::before{
+    content:attr(data-label) ": ";
+    font-weight:600;
+    display:inline-block;
+    width:120px;
+    color:#aaa;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Recent Dipper Observations</h1>
+    <div class="subtitle">Most recent first (from Baserow sightings table)</div>
+  </div>
+  <button class="back-btn" id="backBtn">Back to Dipper Finder</button>
+</header>
+
+<div class="card">
+  <div id="status" class="status">Loading observations…</div>
+  <div id="tableContainer"></div>
+</div>
+
+<script>
+const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
+
+function getActionLabel(action) {
+  // Handle both numeric IDs and Baserow select objects
+  if (action && typeof action === "object") {
+    if (action.value) return action.value;
+    if (typeof action.id !== "undefined") {
+      if (action.id === ACTION_IDS.sighted) return "Sighted";
+      if (action.id === ACTION_IDS.maybe) return "Maybe";
+      return "Action " + action.id;
+    }
+  }
+  if (action === ACTION_IDS.sighted) return "Sighted";
+  if (action === ACTION_IDS.maybe) return "Maybe";
+  if (action == null) return "";
+  return String(action);
+}
+
+function getActionClass(action) {
+  if (action && typeof action === "object") {
+    if (action.id === ACTION_IDS.sighted) return "badge badge-sighted";
+    if (action.id === ACTION_IDS.maybe) return "badge badge-maybe";
+  }
+  if (action === ACTION_IDS.sighted) return "badge badge-sighted";
+  if (action === ACTION_IDS.maybe) return "badge badge-maybe";
+  return "badge";
+}
+
+function formatCoord(value) {
+  if (value == null || value === "") return "";
+  const n = Number(value);
+  if (Number.isNaN(n)) return String(value);
+  return n.toFixed(5);
+}
+
+function goBack() {
+  // If opened as a separate window by script, try to close it
+  if (window.opener) {
+    window.close();
+  } else {
+    // Otherwise just go back to main finder
+    window.location.href = "index.html";
+  }
+}
+
+document.getElementById("backBtn").addEventListener("click", goBack);
+
+const statusEl = document.getElementById("status");
+const tableContainer = document.getElementById("tableContainer");
+
+fetch("/api/observations")
+  .then(r => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
+  .then(data => {
+    const rows = data.results || [];
+
+    if (!rows.length) {
+      statusEl.textContent = "No observations found yet.";
+      tableContainer.innerHTML = "";
+      return;
+    }
+
+    statusEl.textContent = "Showing " + rows.length + " most recent observations.";
+
+    const table = document.createElement("table");
+    const thead = document.createElement("thead");
+    thead.innerHTML = `
+      <tr>
+        <th>ID</th>
+        <th>Bird</th>
+        <th>Action</th>
+        <th>Location</th>
+      </tr>
+    `;
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+
+      const idCell = document.createElement("td");
+      idCell.setAttribute("data-label", "ID");
+      idCell.innerHTML = String(row.id ?? "");
+      tr.appendChild(idCell);
+
+      const birdCell = document.createElement("td");
+      birdCell.setAttribute("data-label", "Bird");
+      const name = row.bird_name || "";
+      const birdId = row.bird_id || "";
+      birdCell.innerHTML = `
+        <div>${name || "(unnamed)"}</div>
+        <div class="small">${birdId ? "(" + birdId + ")" : ""}</div>
+      `;
+      tr.appendChild(birdCell);
+
+      const actionCell = document.createElement("td");
+      actionCell.setAttribute("data-label", "Action");
+      const cls = getActionClass(row.action);
+      const label = getActionLabel(row.action);
+      actionCell.innerHTML = label
+        ? \`<span class="\${cls}">\${label}</span>\`
+        : "";
+      tr.appendChild(actionCell);
+
+      const locCell = document.createElement("td");
+      locCell.setAttribute("data-label", "Location");
+      const lat = formatCoord(row.latitude);
+      const lon = formatCoord(row.longitude);
+      if (lat || lon) {
+        locCell.innerHTML = \`\${lat || "?"}, \${lon || "?"}\`;
+      } else {
+        locCell.innerHTML = '<span class="small">No coordinates</span>';
+      }
+      tr.appendChild(locCell);
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    tableContainer.innerHTML = "";
+    tableContainer.appendChild(table);
+  })
+  .catch(err => {
+    console.error("Error loading observations:", err);
+    statusEl.textContent = "Failed to load observations.";
+    tableContainer.innerHTML = "";
+  });
+</script>
+
+</body>
+</html>
