@@ -41,12 +41,12 @@ button.color.selected { border-color:#000; }
 
 .alu{ background:gray; color:white; }
 .red{ background:red; color:white; }
-.yellow{ background:goldenrod; color:black; }
+.yellow{ background:goldenrod; color:white; }
 .green{ background:green; color:white; }
 .blue{ background:steelblue; color:white; }
-.black{ background:#111; color:white; }
+.black{ background:#1a1a1a; color:white; }
 .violet{ background:purple; color:white; }
-.pink{ background:hotpink; color:black; }
+.pink{ background:hotpink; color:white; }
 .white{ background:#eee; color:black; border:1px solid #999; }
 
 .submit-area{ margin-top:6px; }
@@ -117,16 +117,16 @@ const colorCodeMap={yellow:{code:"ylw",color:"goldenrod"}, alu:{code:"alu",color
 function normalizeColorKey(s){
   if(!s) return "";
   s=String(s).toLowerCase().trim();
-  if(s==="metal") return "Alu";
-  if(s==="black"||s.startsWith("blk")) return "Schwarz";
-  if(s.startsWith("yl")) return "Gelb";
-  if(s.startsWith("alu")) return "Alu";
-  if(s==="red"||s.startsWith("red")) return "Rot";
-  if(s.startsWith("gr")) return "Grün";
-  if(s.startsWith("vio")||s==="vlt") return "Violett";
-  if(s.startsWith("pn")||s==="pnk") return "Rosarot";
-  if(s.startsWith("bl")||s==="blu") return "Blau";
-  if(s.startsWith("wh")||s==="wht") return "Weiss";
+  if(s==="metal") return "alu";
+  if(s==="black"||s.startsWith("blk")) return "black";
+  if(s.startsWith("yl")) return "yellow";
+  if(s.startsWith("alu")) return "alu";
+  if(s==="red"||s.startsWith("red")) return "red";
+  if(s.startsWith("gr")) return "green";
+  if(s.startsWith("vio")||s==="vlt") return "violet";
+  if(s.startsWith("pn")||s==="pnk") return "pink";
+  if(s.startsWith("bl")||s==="blu") return "blue";
+  if(s.startsWith("wh")||s==="wht") return "white";
   return s;
 }
 
