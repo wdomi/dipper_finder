@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Bachstelzen-Finder</title>
+<title>Wasseramsel-Finder</title>
   <link rel="icon" href="favicon.png" type="image/png">
 <style>
 :root{
@@ -79,10 +79,10 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 <body>
 
 <header>
-  <h1><img src="Johann.png" class="bird-img"> Bachstelzen-Finder</h1>
+  <h1><img src="Johann.png" class="bird-img"> Wasseramsel-Finder</h1>
   <div class="top-actions">
-    <button class="reset-btn" id="resetColorsBtn">Zurücksetzen</button>
-    <div class="small-muted">Wählen Sie bis zu 2 Farben pro Bein</div>
+    <button class="reset-btn" id="resetColorsBtn">Reset</button>
+    <div class="small-muted">Wähle bis zu 2 Farben pro Bein</div>
   </div>
 </header>
 
@@ -100,14 +100,192 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <div class="submit-area">
   <button class="submit-btn" id="submitBtn">Sichtungen absenden</button>
-  <div class="small-muted">Ihr Standort wird beim Absenden der Sichtungen abgefragt.</div>
+  <div class="small-muted">Dein Standort wird beim Absenden der Sichtung abgefragt. Bitte zustimmen (für GPS-Koordinaten).</div>
 </div>
 
 <div id="results">CSV wird geladen…</div>
 <div id="toast" class="toast"></div>
 
 <script>
-// The JavaScript logic remains unchanged
+const CSV_URL="https://wdomi.github.io/dipper_finder/view_birdsCSV_apps.csv";
+const BASEROW_ENDPOINT="https://api.baserow.io/api/database/rows/table/742957/?user_field_names=true";
+const ACTION_IDS={sighted:4519311, maybe:4519312};
+const topColors=["alu","red","blue","pink","white"];
+const bottomColors=["yellow","green","violet","black"];
+const colorCodeMap={yellow:{code:"ylw",color:"goldenrod"}, alu:{code:"alu",color:"gray"}, metal:{code:"alu",color:"gray"}, black:{code:"blk",color:"#111"}, red:{code:"red",color:"red"}, green:{code:"grn",color:"green"}, violet:{code:"vlt",color:"purple"}, pink:{code:"pnk",color:"hotpink"}, blue:{code:"blu",color:"steelblue"}, white:{code:"wht",color:"#eee"}};
+
+function normalizeColorKey(s){
+  if(!s) return "";
+  s=String(s).toLowerCase().trim();
+  if(s==="metal") return "Alu";
+  if(s==="black"||s.startsWith("blk")) return "Schwarz";
+  if(s.startsWith("yl")) return "Gelb";
+  if(s.startsWith("alu")) return "Alu";
+  if(s==="red"||s.startsWith("red")) return "Rot";
+  if(s.startsWith("gr")) return "Grün";
+  if(s.startsWith("vio")||s==="vlt") return "Violett";
+  if(s.startsWith("pn")||s==="pnk") return "Rosarot";
+  if(s.startsWith("bl")||s==="blu") return "Blau";
+  if(s.startsWith("wh")||s==="wht") return "Weiss";
+  return s;
+}
+
+function codePillFor(raw){
+  const key=normalizeColorKey(raw);
+  const meta=colorCodeMap[key];
+  if(!meta) return `<span class="code-pill">${escapeHtml(raw||"")}</span>`;
+  const textColor=(meta.code==="wht")?"#000":meta.color;
+  const bg=(meta.code==="wht")?"#eee":"transparent";
+  return `<span class="code-pill" style="color:${textColor};background:${bg}">${meta.code}</span>`;
+}
+
+function escapeHtml(s){ if(!s) return ""; return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"); }
+
+const perBirdSelection=new Map();
+let birds=[];
+const resultsEl=document.getElementById("results");
+
+function makeColorButton(name){ const b=document.createElement("button"); b.type="button"; b.className="color "+name; b.textContent=name; if(name==="white") b.classList.add("white"); return b; }
+
+const rightSel=[], leftSel=[];
+function populateColors(gridId, colors, sideArr){
+  const grid=document.getElementById(gridId);
+  colors.forEach(c=>{
+    const b=makeColorButton(c);
+    b.addEventListener("click", ()=>{ toggleColorSelection(sideArr,c,b); });
+    grid.appendChild(b);
+  });
+}
+function toggleColorSelection(arr, color, btn){
+  const idx=arr.indexOf(color);
+  if(idx>=0){ arr.splice(idx,1); btn.classList.remove("selected"); }
+  else if(arr.length<2){ arr.push(color); btn.classList.add("selected"); }
+  renderFilteredTable();
+}
+document.getElementById("resetColorsBtn").addEventListener("click", ()=>{
+  rightSel.splice(0); leftSel.splice(0);
+  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
+  renderFilteredTable();
+});
+
+populateColors("topColors", topColors, rightSel);
+populateColors("bottomColors", bottomColors, rightSel);
+populateColors("topColorsLeft", topColors, leftSel);
+populateColors("bottomColorsLeft", bottomColors, leftSel);
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length===0) return [];
+  const headers=lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const gi=key=>headers.indexOf(key);
+  const i_bird_id=gi("bird_id"),i_name=gi("name"),i_sex=gi("sex"),i_age=gi("age"),
+        i_r_top=gi("r_top"),i_r_bottom=gi("r_bottom"),i_l_top=gi("l_top"),i_l_bottom=gi("l_bottom"),
+        i_territory=gi("territory"),i_territory_name=gi("territory_name"),
+        i_dist=gi("dist punt dal gal (m)"),i_banded_on=gi("banded_on");
+  return lines.slice(1).map(row=>{
+    const cols=[]; row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'').trim()));
+    return {
+      bird_id:cols[i_bird_id]||"", name:cols[i_name]||"", sex:cols[i_sex]||"", age:cols[i_age]||"",
+      Rt:(cols[i_r_top]||"").toLowerCase(), Rb:(cols[i_r_bottom]||"").toLowerCase(),
+      Lt:(cols[i_l_top]||"").toLowerCase(), Lb:(cols[i_l_bottom]||"").toLowerCase(),
+      territory:cols[i_territory]||cols[i_territory_name]||"", dist:cols[i_dist]||"", banded_on:cols[i_banded_on]||""
+    };
+  });
+}
+
+function matchesRow(row){
+  const leftOk=[normalizeColorKey(row.Lt),normalizeColorKey(row.Lb)].filter(Boolean);
+  const rightOk=[normalizeColorKey(row.Rt),normalizeColorKey(row.Rb)].filter(Boolean);
+  const Rsel=rightSel.map(s=>s).filter(Boolean);
+  const Lsel=leftSel.map(s=>s).filter(Boolean);
+  return (Rsel.length===0||Rsel.every(sel=>rightOk.includes(sel))) && (Lsel.length===0||Lsel.every(sel=>leftOk.includes(sel)));
+}
+
+function renderFilteredTable(){
+  if(!birds.length){ resultsEl.innerHTML="<p class='small-muted'>No data loaded yet.</p>"; return; }
+  const matched=birds.filter(matchesRow);
+  if(matched.length===0){ resultsEl.innerHTML="<p class='small-muted'>No matches.</p>"; return; }
+
+  const table=document.createElement("table");
+  const thead=document.createElement("thead");
+  const trh=document.createElement("tr");
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+    const th=document.createElement("th"); th.textContent=h; if(i===3) th.classList.add("codes-column"); trh.appendChild(th);
+  });
+  thead.appendChild(trh); table.appendChild(thead);
+  const tbody=document.createElement("tbody");
+
+  matched.forEach(row=>{
+    const tr=document.createElement("tr");
+    const tdName=document.createElement("td"); tdName.innerHTML=`${escapeHtml(row.name||"")} <div class="small-muted">(${escapeHtml(row.bird_id||"")})</div>`; tr.appendChild(tdName);
+    const tdSex=document.createElement("td"); tdSex.textContent=`${row.sex||""}${row.age?" / "+row.age:""}${row.banded_on?" ("+row.banded_on+")":""}`; tr.appendChild(tdSex);
+    const tdTerr=document.createElement("td"); tdTerr.textContent=`${row.territory||""}${row.dist?" ("+row.dist+" m)":""}`; tr.appendChild(tdTerr);
+    const tdCodes=document.createElement("td"); tdCodes.classList.add("codes-column"); tdCodes.innerHTML=`${codePillFor(row.Rt)}/${codePillFor(row.Rb)}-${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`; tr.appendChild(tdCodes);
+    const tdActions=document.createElement("td");
+    const wrap=document.createElement("div"); wrap.className="action-group vertical";
+    const btnSight=document.createElement("button"); btnSight.type="button"; btnSight.className="toggle-btn sighted"; btnSight.textContent="Sighted";
+    const btnMaybe=document.createElement("button"); btnMaybe.type="button"; btnMaybe.className="toggle-btn maybe"; btnMaybe.textContent="Maybe";
+    const cur=perBirdSelection.get(row.bird_id)||null; if(cur==="sighted") btnSight.classList.add("toggle-on"); if(cur==="maybe") btnMaybe.classList.add("toggle-on");
+    btnSight.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted"); renderFilteredTable(); });
+    btnMaybe.addEventListener("click", ()=>{ perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe"); renderFilteredTable(); });
+    wrap.appendChild(btnSight); wrap.appendChild(btnMaybe); tdActions.appendChild(wrap); tr.appendChild(tdActions);
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  resultsEl.innerHTML=""; resultsEl.appendChild(table);
+}
+
+async function requestLocation(){
+  if(!navigator.geolocation) return {lat:null, lon:null};
+  return new Promise(resolve=>{
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({lat:Number(pos.coords.latitude.toFixed(10)), lon:Number(pos.coords.longitude.toFixed(10))}),
+      err => { console.warn("Geolocation error:", err); alert("Cannot get location. Coordinates will be empty."); resolve({lat:null, lon:null}); },
+      { timeout:8000 }
+    );
+  });
+}
+
+document.getElementById("submitBtn").addEventListener("click", async ()=>{
+  const entries=[];
+  for(const [bird_id,val] of perBirdSelection.entries()){
+    if(val==="sighted"||val==="maybe"){
+      const row=birds.find(b=>b.bird_id===bird_id); if(!row) continue;
+      entries.push({row,action:val});
+    }
+  }
+  if(entries.length===0){ alert("No selected birds to submit."); return; }
+
+  let gps={lat:null, lon:null};
+  if(navigator.geolocation){
+    gps=await new Promise(resolve=>{
+      navigator.geolocation.getCurrentPosition(
+        pos=>resolve({lat:Number(pos.coords.latitude.toFixed(10)), lon:Number(pos.coords.longitude.toFixed(10))}),
+        err=>{ alert("Location denied or unavailable. Coordinates will be empty."); resolve({lat:null, lon:null}); },
+        {timeout:8000}
+      );
+    });
+  }
+
+  let successCount=0;
+  for(const e of entries){
+    const payload={bird_name:e.row.name,bird_id:e.row.bird_id,action:e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS.maybe,latitude:gps.lat,longitude:gps.lon};
+    try{
+      const r=await fetch("/api/submit", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(payload)
+});
+      if(r.ok) successCount++; else { const txt=await r.text().catch(()=> ""); console.error("Baserow save error", r.status, txt); }
+    }catch(err){ console.error("Network error posting to Baserow", err); }
+  }
+  showToast(`Submitted ${successCount}/${entries.length}`);
+  perBirdSelection.clear(); renderFilteredTable();
+});
+
+function showToast(msg,t=3000){ const toast=document.getElementById("toast"); toast.textContent=msg; toast.classList.add("show"); setTimeout(()=>toast.classList.remove("show"),t); }
+
+fetch(CSV_URL).then(r=>r.ok?r.text():Promise.reject(r.statusText)).then(txt=>{ birds=parseCSV(txt); renderFilteredTable(); }).catch(err=>{ resultsEl.innerHTML=`<p style="color:crimson">⚠️ Failed to load CSV: ${escapeHtml(String(err))}</p>`; console.error(err); });
 </script>
 </body>
 </html>
