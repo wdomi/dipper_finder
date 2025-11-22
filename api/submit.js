@@ -14,17 +14,17 @@ export default async function handler(req, res) {
     action,
     latitude,
     longitude,
-    territory   // ✅ FIX: frontend sends "territory"
+    territory
   } = req.body;
 
   const payload = {
     field_6258635: bird_name,
     field_6258636: bird_id,
     field_6258637: action,
-    field_6258638: new Date().toISOString(),
-    field_6258639: territory || "",   // ✅ FIX: correctly mapped
-    field_6258640: latitude,          // ✅ latitude
-    field_6318262: longitude          // ✅ longitude
+    // ✅ REMOVE created_on field_6258638 (Baserow sets automatically)
+    field_6258639: territory || "",
+    field_6258640: latitude,
+    field_6318262: longitude
   };
 
   try {
