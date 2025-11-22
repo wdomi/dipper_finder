@@ -8,9 +8,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "BASEROW_TOKEN not configured" });
   }
 
-  // FIXED: removed user_field_names=true so order_by=-id works
+  // ✅ FIX: use row_id instead of id
   const BASEROW_ENDPOINT =
-    "https://api.baserow.io/api/database/rows/table/742957/?order_by=-id&page_size=100";
+    "https://api.baserow.io/api/database/rows/table/742957/?order_by=-row_id&page_size=100";
 
   try {
     const response = await fetch(BASEROW_ENDPOINT, {
