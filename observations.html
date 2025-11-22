@@ -167,16 +167,19 @@ fetch("/api/observations")
 
     const table=document.createElement("table");
     table.innerHTML=`
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Bird</th>
-          <th>Action</th>
-          <th>Latitude</th>
-          <th>Longitude</th>
-          <th>Territory</th>
-        </tr>
-      </thead>
+table.innerHTML=`
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Bird</th>
+      <th>Action</th>
+      <th>Territory</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+    </tr>
+  </thead>
+`;
+
     `;
 
     const tbody=document.createElement("tbody");
