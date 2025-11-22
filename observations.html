@@ -210,22 +210,22 @@ fetch("/api/observations")
       actionCell.innerHTML=label?`<span class="${cls}">${label}</span>`:"";
       tr.appendChild(actionCell);
 
-      // Territory ✅ FIXED DISPLAY
+      // ✅ Territory (TEXT)
       const terrCell=document.createElement("td");
       terrCell.setAttribute("data-label","Territory");
-      terrCell.textContent=row.field_6258639||"";
+      terrCell.textContent=row.field_6318262 || "";
       tr.appendChild(terrCell);
 
-      // Latitude
+      // ✅ Latitude
       const latCell=document.createElement("td");
       latCell.setAttribute("data-label","Latitude");
-      latCell.textContent=formatCoord(row.field_6258640)||"";
+      latCell.textContent=formatCoord(row.field_6258639) || "";
       tr.appendChild(latCell);
 
-      // Longitude
+      // ✅ Longitude
       const lonCell=document.createElement("td");
       lonCell.setAttribute("data-label","Longitude");
-      lonCell.textContent=formatCoord(row.field_6318262)||"";
+      lonCell.textContent=formatCoord(row.field_6258640) || "";
       tr.appendChild(lonCell);
 
       tbody.appendChild(tr);
