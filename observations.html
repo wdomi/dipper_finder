@@ -131,7 +131,7 @@ const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
   if (action && typeof action === "object") {
-    return action.value || "";
+    if (action.value) return action.value;
   }
   return "";
 }
@@ -144,113 +144,115 @@ function getActionClass(action) {
   return "badge";
 }
 
-function formatCoord(v){
-  if(v==null) return null;
-  const n=Number(v);
-  if(Number.isNaN(n)) return null;
+function formatCoord(value) {
+  if (value == null || value === "") return "";
+  const n = Number(value);
+  if (Number.isNaN(n)) return String(value);
   return n.toFixed(5);
 }
 
-document.getElementById("backBtn").addEventListener("click", ()=>{
-  window.location.href="/";
+document.getElementById("backBtn").addEventListener("click", () => {
+  window.location.href = "/";
 });
 
-const statusEl=document.getElementById("status");
-const tableContainer=document.getElementById("tableContainer");
+const statusEl = document.getElementById("status");
+const tableContainer = document.getElementById("tableContainer");
 
 fetch("/api/observations")
-.then(r=>r.json())
-.then(data=>{
-  const rows=data.results||[];
+  .then(r => {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  })
+  .then(data => {
+    const rows = data.results || [];
 
-  if(!rows.length){
-    statusEl.textContent="No observations yet.";
-    return;
-  }
-
-  // MAP FIELD IDs → readable
-  rows.forEach(r=>{
-    r.bird_name=r.field_6258635;
-    r.bird_id=r.field_6258636;
-    r.action=r.field_6258637;
-    r.date=r.field_6258638;
-    r.territory=r.field_6258639;
-    r.latitude=r.field_6258640;
-    r.longitude=r.field_6318262;
-  });
-
-  statusEl.textContent=`Showing ${rows.length} most recent observations.`;
-
-  const table=document.createElement("table");
-  table.innerHTML=`
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Bird</th>
-      <th>Action</th>
-      <th>Date</th>
-      <th>Location</th>
-    </tr>
-  </thead>`;
-
-  const tbody=document.createElement("tbody");
-
-  rows.forEach(row=>{
-    const tr=document.createElement("tr");
-
-    const idCell=document.createElement("td");
-    idCell.setAttribute("data-label","ID");
-    idCell.textContent=row.id;
-    tr.appendChild(idCell);
-
-    const birdCell=document.createElement("td");
-    birdCell.setAttribute("data-label","Bird");
-    birdCell.innerHTML=`
-      <div>${row.bird_name||"(unnamed)"}</div>
-      <div class="small">${row.bird_id?"("+row.bird_id+")":""}</div>
-    `;
-    tr.appendChild(birdCell);
-
-    const actionCell=document.createElement("td");
-    actionCell.setAttribute("data-label","Action");
-    const cls=getActionClass(row.action);
-    const label=getActionLabel(row.action);
-    actionCell.innerHTML=label?`<span class="${cls}">${label}</span>`:"";
-    tr.appendChild(actionCell);
-
-    const dateCell=document.createElement("td");
-    dateCell.setAttribute("data-label","Date");
-    dateCell.textContent=row.date?row.date.replace("T"," ").slice(0,16):"";
-    tr.appendChild(dateCell);
-
-    const locCell=document.createElement("td");
-    locCell.setAttribute("data-label","Location");
-    const lat=formatCoord(row.latitude);
-    const lon=formatCoord(row.longitude);
-
-    if(row.territory && lat && lon){
-      locCell.textContent=`${row.territory} – ${lat}, ${lon}`;
-    } else if(row.territory){
-      locCell.textContent=row.territory;
-    } else if(lat && lon){
-      locCell.textContent=`${lat}, ${lon}`;
-    } else {
-      locCell.textContent="No coordinates";
+    if (!rows.length) {
+      statusEl.textContent = "No observations yet.";
+      tableContainer.innerHTML = "";
+      return;
     }
 
-    tr.appendChild(locCell);
+    statusEl.textContent = "Showing " + rows.length + " most recent observations.";
 
-    tbody.appendChild(tr);
+    const table = document.createElement("table");
+
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Bird</th>
+          <th>Action</th>
+          <th>Date</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+    `;
+
+    const tbody = document.createElement("tbody");
+
+    rows.forEach(row => {
+      const tr = document.createElement("tr");
+
+      // ID
+      const idCell = document.createElement("td");
+      idCell.setAttribute("data-label", "ID");
+      idCell.textContent = row.id ?? "";
+      tr.appendChild(idCell);
+
+      // Bird
+      const birdCell = document.createElement("td");
+      birdCell.setAttribute("data-label", "Bird");
+      birdCell.innerHTML = `
+        <div>${row.field_6258635 || "(unnamed)"}</div>
+        <div class="small">${row.field_6258636 ? "(" + row.field_6258636 + ")" : ""}</div>
+      `;
+      tr.appendChild(birdCell);
+
+      // Action
+      const actionCell = document.createElement("td");
+      actionCell.setAttribute("data-label", "Action");
+      const cls = getActionClass(row.field_6258637);
+      const label = getActionLabel(row.field_6258637);
+      actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
+      tr.appendChild(actionCell);
+
+      // Date
+      const dateCell = document.createElement("td");
+      dateCell.setAttribute("data-label", "Date");
+      const dt = row.field_6258638 ? row.field_6258638.split("T")[0] + " " + row.field_6258638.split("T")[1].substring(0,5) : "";
+      dateCell.textContent = dt || "";
+      tr.appendChild(dateCell);
+
+      // Location
+      const locCell = document.createElement("td");
+      locCell.setAttribute("data-label", "Location");
+
+      const territory = row.field_6258639;
+      const lat = formatCoord(row.field_6258640);
+      const lon = formatCoord(row.field_6318262);
+
+      if (territory) {
+        locCell.textContent = `${territory}`;
+      } else if (lat && lon) {
+        locCell.textContent = `${lat}, ${lon}`;
+      } else {
+        locCell.textContent = "No coordinates";
+      }
+
+      tr.appendChild(locCell);
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    tableContainer.innerHTML = "";
+    tableContainer.appendChild(table);
+  })
+  .catch(err => {
+    console.error("Error loading observations:", err);
+    statusEl.textContent = "Failed to load observations.";
+    tableContainer.innerHTML = "";
   });
-
-  table.appendChild(tbody);
-  tableContainer.innerHTML="";
-  tableContainer.appendChild(table);
-})
-.catch(err=>{
-  console.error(err);
-  statusEl.textContent="Failed to load observations.";
-});
 </script>
 
 </body>
