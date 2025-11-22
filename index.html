@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Dipper Finder</title>
+<title>Dipper Finder </title>
 <link rel="icon" href="/favicon.png" type="image/png">
 
 <style>
@@ -47,7 +47,7 @@ button.color.selected { border-color:#000; }
 .white{ background:#eee; color:black; border:1px solid #999; }
 
 .submit-area{ margin-top:6px; }
-/* NEW: make button + link sit on one row */
+/* button + link row */
 .submit-row{
   display:flex;
   align-items:center;
@@ -57,7 +57,7 @@ button.color.selected { border-color:#000; }
 }
 .submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
 
-/* NEW: styling for the link on the right */
+/* link to observations */
 .obs-link{
   font-size:14px;
   color:#555;
@@ -65,7 +65,7 @@ button.color.selected { border-color:#000; }
   cursor:pointer;
 }
 
-/* NEW: make “location will be requested” smaller + dark grey */
+/* small dark grey text */
 .small-muted{
   font-size:12px;
   color:#555;
@@ -88,6 +88,85 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 .toast{ position:fixed; right:16px; bottom:16px; background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none; }
 .toast.show{ display:block; }
 
+/* Confirmation modal */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal-overlay.show{
+  display:flex;
+}
+.modal{
+  background:#fff;
+  color:#222;
+  border-radius:10px;
+  max-width:420px;
+  width:100%;
+  padding:14px 16px;
+  box-shadow:0 4px 14px rgba(0,0,0,0.25);
+  font-size:14px;
+}
+.modal h2{
+  margin:0 0 6px;
+  font-size:18px;
+}
+.modal-section{
+  margin-bottom:8px;
+}
+.modal-list{
+  max-height:160px;
+  overflow:auto;
+  padding-left:18px;
+  margin:4px 0;
+}
+.modal-row{
+  margin-bottom:3px;
+}
+.modal-row span.label{
+  font-weight:600;
+}
+.modal-footer{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:10px;
+}
+.modal-footer button{
+  padding:7px 12px;
+  border-radius:6px;
+  border:1px solid #bbb;
+  cursor:pointer;
+  font-size:14px;
+}
+.modal-footer .primary{
+  background:var(--accent);
+  color:#fff;
+  border-color:var(--accent);
+}
+.modal-footer .secondary{
+  background:#eee;
+}
+.modal-territory-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.modal-territory-row label{
+  font-size:13px;
+}
+.modal-territory-row select{
+  font-size:13px;
+  padding:4px 6px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
 @media (max-width:520px){
   .color-grid.top-row, .color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
   th, td{ padding:6px 4px; font-size:13px; }
@@ -98,8 +177,7 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <body>
 <header>
-  <!-- HERE IS THE PAGE TITLE -->
-  <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper-Finder</h1> 
+  <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper Finder</h1>
   <div class="top-actions">
     <button class="reset-btn" id="resetColorsBtn">Reset</button>
     <div class="small-muted">Select up to 2 colors per leg</div>
@@ -119,17 +197,46 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 </div>
 
 <div class="submit-area">
-  <!-- NEW: button + link row -->
   <div class="submit-row">
     <button class="submit-btn" id="submitBtn">Submit Sightings</button>
     <a href="observations.html" class="obs-link">View last observations</a>
   </div>
-  <!-- Text now styled via .small-muted (smaller, dark grey) -->
   <div class="small-muted">Your location will be requested when submitting sightings.</div>
 </div>
 
 <div id="results">Loading CSV…</div>
 <div id="toast" class="toast"></div>
+
+<!-- Confirmation modal -->
+<div id="confirmModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <h2 id="confirmTitle">Confirm submission</h2>
+    <div class="modal-section">
+      <div><strong>Birds to submit:</strong></div>
+      <div id="confirmList" class="modal-list"></div>
+    </div>
+    <div class="modal-section">
+      <div><strong>Location:</strong> <span id="confirmLocationText"></span></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-territory-row">
+        <label for="territorySelect">Override / add territory:</label>
+        <select id="territorySelect">
+          <option value="">None</option>
+          <!-- options filled by JS -->
+        </select>
+      </div>
+      <div class="small-muted">
+        If you choose a territory, GPS coordinates will NOT be stored,
+        only the territory text (e.g. "Muur (46.62, 10.19)").
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="secondary" id="cancelSubmitBtn">Cancel</button>
+      <button type="button" class="primary" id="confirmSubmitBtn">OK</button>
+    </div>
+  </div>
+</div>
 
 <script>
 /* CSV is served locally from the project root on Vercel */
@@ -149,6 +256,34 @@ const colorCodeMap={
   blue:{code:"blu",color:"steelblue"},
   white:{code:"wht",color:"#eee"}
 };
+
+/* Territory list (name + coords) */
+const TERRITORIES = [
+  { name: "Muur",              lat: 46.624955,         lon: 10.193195 },
+  { name: "Wehr",              lat: 46.6284110862761,  lon: 10.194532983005 },
+  { name: "Valletta",          lat: 46.633326401934,   lon: 10.193483736366 },
+  { name: "Engi",              lat: 46.6344845294952,  lon: 10.1866728533059 },
+  { name: "Nordknick",         lat: 46.6352981608361,  lon: 10.1833343412727 },
+  { name: "Punt Periv",        lat: 46.6370402555912,  lon: 10.1819842681288 },
+  { name: "PP - Höhli",        lat: 46.63906,          lon: 10.17906 },
+  { name: "Höhli",             lat: 46.64244,          lon: 10.17616 },
+  { name: "Kleine Eier",       lat: 46.64587,          lon: 10.17120 },
+  { name: "Tiefstelle",        lat: 46.64919,          lon: 10.16859 },
+  { name: "Felsen",            lat: 46.64953,          lon: 10.17391 },
+  { name: "Unterste",          lat: 46.65314,          lon: 10.16814 },
+  { name: "US-400",            lat: 46.68078,          lon: 10.14187 },
+  { name: "US-600",            lat: 46.68281,          lon: 10.14156 },
+  { name: "US-1000",           lat: 46.68545,          lon: 10.14004 },
+  { name: "US_Westknick",      lat: 46.68680,          lon: 10.14078 },
+  { name: "Hohe Schlucht",     lat: 46.68787,          lon: 10.13348 },
+  { name: "Ova da Laschadura", lat: 46.68813,          lon: 10.13217 },
+  { name: "Tiefe Schlucht",    lat: 46.68820,          lon: 10.13016 },
+  { name: "US_Felsen",         lat: 46.69179,          lon: 10.12595 },
+  { name: "Val da Barcli",     lat: 46.69340,          lon: 10.12069 },
+  { name: "Cluozza",           lat: 46.69338,          lon: 10.11842 },
+  { name: "Felswändli",        lat: 46.69501,          lon: 10.11522 },
+  { name: "Zernezbrücke",      lat: 46.69586,          lon: 10.10172 }
+];
 
 function normalizeColorKey(s){
   if(!s) return "";
@@ -349,6 +484,87 @@ function renderFilteredTable(){
   resultsEl.appendChild(table);
 }
 
+/* ---- Confirmation modal logic ---- */
+
+const modalEl = document.getElementById("confirmModal");
+const confirmListEl = document.getElementById("confirmList");
+const confirmLocationTextEl = document.getElementById("confirmLocationText");
+const territorySelectEl = document.getElementById("territorySelect");
+const confirmSubmitBtn = document.getElementById("confirmSubmitBtn");
+const cancelSubmitBtn = document.getElementById("cancelSubmitBtn");
+
+let pendingEntries=null;
+let pendingGps={lat:null, lon:null};
+
+// Fill territory dropdown
+function populateTerritorySelect(){
+  // keep "None" as first
+  TERRITORIES.forEach(t=>{
+    const opt=document.createElement("option");
+    opt.value=t.name;
+    opt.textContent=t.name;
+    territorySelectEl.appendChild(opt);
+  });
+}
+populateTerritorySelect();
+
+function openConfirmModal(entries, gps){
+  pendingEntries = entries;
+  pendingGps = gps;
+
+  // Fill birds list
+  confirmListEl.innerHTML="";
+  const ul=document.createElement("ul");
+  ul.style.margin="4px 0";
+  ul.style.paddingLeft="18px";
+
+  entries.forEach(e=>{
+    const li=document.createElement("li");
+    const row=e.row;
+    const labelAction = e.action==="sighted" ? "Sighted" : "Maybe";
+    li.textContent = `${row.name || "(unnamed)"} (${row.bird_id || ""}) – ${labelAction}`;
+    ul.appendChild(li);
+  });
+  confirmListEl.appendChild(ul);
+
+  // Location text
+  if (gps && gps.lat!=null && gps.lon!=null){
+    confirmLocationTextEl.textContent = `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)}`;
+  } else {
+    confirmLocationTextEl.textContent = "NOT AVAILABLE";
+  }
+
+  // reset territory selection
+  territorySelectEl.value = "";
+
+  modalEl.classList.add("show");
+  modalEl.setAttribute("aria-hidden","false");
+}
+
+function closeConfirmModal(){
+  modalEl.classList.remove("show");
+  modalEl.setAttribute("aria-hidden","true");
+  pendingEntries=null;
+}
+
+/* Get GPS (may fail gracefully) */
+async function getGps(){
+  if(!navigator.geolocation){
+    return {lat:null, lon:null};
+  }
+  return new Promise(resolve=>{
+    navigator.geolocation.getCurrentPosition(
+      pos=>resolve({
+        lat:Number(pos.coords.latitude.toFixed(10)),
+        lon:Number(pos.coords.longitude.toFixed(10))
+      }),
+      ()=>resolve({lat:null, lon:null}),
+      {timeout:8000}
+    );
+  });
+}
+
+/* Original submit button now just prepares entries + GPS and shows modal */
 document.getElementById("submitBtn").addEventListener("click", async ()=>{
   const entries=[];
   for(const [bird_id,val] of perBirdSelection.entries()){
@@ -363,25 +579,61 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
     return;
   }
 
-  let gps={lat:null, lon:null};
-  if(navigator.geolocation){
-    gps=await new Promise(resolve=>{
-      navigator.geolocation.getCurrentPosition(
-        pos=>resolve({lat:Number(pos.coords.latitude.toFixed(10)), lon:Number(pos.coords.longitude.toFixed(10))}),
-        ()=>resolve({lat:null, lon:null}),
-        {timeout:8000}
-      );
-    });
+  const gps = await getGps();
+  openConfirmModal(entries, gps);
+});
+
+/* Cancel inside modal */
+cancelSubmitBtn.addEventListener("click", ()=>{
+  closeConfirmModal();
+});
+
+/* Confirm inside modal: actually POST to /api/submit */
+confirmSubmitBtn.addEventListener("click", async ()=>{
+  if(!pendingEntries || !Array.isArray(pendingEntries) || pendingEntries.length===0){
+    closeConfirmModal();
+    return;
   }
 
+  const gps = pendingGps || {lat:null, lon:null};
+  const selectedName = territorySelectEl.value;
+  const selectedTerritory = TERRITORIES.find(t=>t.name===selectedName) || null;
+
+  // Determine how to send coords/territory based on selection:
+  // If a territory is chosen -> ignore GPS, send only territory text, coords null.
+  // If no territory chosen:
+  //    - if GPS available -> send GPS, territory=""
+  //    - otherwise -> coords null, territory=""
+  let finalLat = gps.lat;
+  let finalLon = gps.lon;
+  let territoryText = "";
+
+  if (selectedTerritory){
+    finalLat = null;
+    finalLon = null;
+    territoryText = `${selectedTerritory.name} (${selectedTerritory.lat}, ${selectedTerritory.lon})`;
+  } else {
+    // no territory override
+    if (gps.lat==null || gps.lon==null){
+      finalLat = null;
+      finalLon = null;
+      territoryText = "";
+    } else {
+      territoryText = "";
+    }
+  }
+
+  closeConfirmModal();
+
   let successCount=0;
-  for(const e of entries){
+  for(const e of pendingEntries){
     const payload={
       bird_name:e.row.name,
       bird_id:e.row.bird_id,
       action:e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS.maybe,
-      latitude:gps.lat,
-      longitude:gps.lon
+      latitude:finalLat,
+      longitude:finalLon,
+      territory:territoryText
     };
     try{
       const r=await fetch("/api/submit",{
@@ -399,11 +651,13 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
       console.error("Network error posting to Baserow", err);
     }
   }
-  showToast(`Submitted ${successCount}/${entries.length}`);
+
+  showToast(`Submitted ${successCount}/${pendingEntries.length}`);
   perBirdSelection.clear();
   renderFilteredTable();
 });
 
+/* Toast */
 function showToast(msg,t=3000){
   const toast=document.getElementById("toast");
   toast.textContent=msg;
@@ -411,6 +665,7 @@ function showToast(msg,t=3000){
   setTimeout(()=>toast.classList.remove("show"),t);
 }
 
+/* Load CSV and start */
 fetch(CSV_URL)
   .then(r=>r.ok?r.text():Promise.reject(r.statusText))
   .then(txt=>{ birds=parseCSV(txt); renderFilteredTable(); })
