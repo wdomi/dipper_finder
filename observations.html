@@ -224,13 +224,26 @@ fetch("/api/observations")
       actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
       tr.appendChild(actionCell);
 
-      // Location
-      const locCell = document.createElement("td");
-      locCell.setAttribute("data-label", "Location");
-      const lat = formatCoord(row.latitude);
-      const lon = formatCoord(row.longitude);
-      locCell.textContent = lat || lon ? `${lat || "?"}, ${lon || "?"}` : "No coordinates";
-      tr.appendChild(locCell);
+// Location
+const locCell = document.createElement("td");
+locCell.setAttribute("data-label", "Location");
+
+const lat = formatCoord(row.latitude);
+const lon = formatCoord(row.longitude);
+
+if (row.territory) {
+  // Territory chosen or assigned
+  locCell.textContent = row.territory;
+} else if (lat || lon) {
+  // GPS available
+  locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
+} else {
+  // Nothing available
+  locCell.textContent = "No coordinates";
+}
+
+tr.appendChild(locCell);
+
 
       tbody.appendChild(tr);
     });
