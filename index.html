@@ -585,19 +585,23 @@ confirmSubmitBtn.addEventListener("click", async ()=>{
   let territoryText = "";
 
   if (selectedTerritory){
+  // ✅ save territory name AND coordinates
   finalLat = selectedTerritory.lat;
   finalLon = selectedTerritory.lon;
   territoryText = selectedTerritory.name;
-}
- else {
-    if (gps.lat==null || gps.lon==null){
-      finalLat = null;
-      finalLon = null;
-      territoryText = "";
-    } else {
-      territoryText = "";
-    }
+} else {
+  // ✅ GPS case
+  if (gps.lat == null || gps.lon == null){
+    finalLat = null;
+    finalLon = null;
+    territoryText = "";
+  } else {
+    finalLat = gps.lat;
+    finalLon = gps.lon;
+    territoryText = "";
   }
+}
+
 
   closeConfirmModal();
 
