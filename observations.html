@@ -131,12 +131,8 @@ const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
   if (action && typeof action === "object") {
-    if (action.value) return action.value;
-    if (action.id === ACTION_IDS.sighted) return "sighted";
-    if (action.id === ACTION_IDS.maybe) return "maybe";
+    return action.value || "";
   }
-  if (action === ACTION_IDS.sighted) return "sighted";
-  if (action === ACTION_IDS.maybe) return "maybe";
   return "";
 }
 
@@ -145,153 +141,116 @@ function getActionClass(action) {
     if (action.id === ACTION_IDS.sighted) return "badge badge-sighted";
     if (action.id === ACTION_IDS.maybe) return "badge badge-maybe";
   }
-  if (action === ACTION_IDS.sighted) return "badge badge-sighted";
-  if (action === ACTION_IDS.maybe) return "badge badge-maybe";
   return "badge";
 }
 
-function formatCoord(value) {
-  if (value == null || value === "") return "";
-  const n = Number(value);
-  if (Number.isNaN(n)) return String(value);
+function formatCoord(v){
+  if(v==null) return null;
+  const n=Number(v);
+  if(Number.isNaN(n)) return null;
   return n.toFixed(5);
 }
 
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const day = String(d.getDate()).padStart(2,"0");
-  const hh = String(d.getHours()).padStart(2,"0");
-  const mm = String(d.getMinutes()).padStart(2,"0");
-  return `${y}-${m}-${day} ${hh}:${mm}`;
-}
-
-// Back button → go to root
-document.getElementById("backBtn").addEventListener("click", () => {
-  window.location.href = "/";
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  window.location.href="/";
 });
 
-const statusEl = document.getElementById("status");
-const tableContainer = document.getElementById("tableContainer");
+const statusEl=document.getElementById("status");
+const tableContainer=document.getElementById("tableContainer");
 
 fetch("/api/observations")
-  .then(r => {
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  })
-  .then(data => {
-    let rows = data.results || [];
+.then(r=>r.json())
+.then(data=>{
+  const rows=data.results||[];
 
-    // map field IDs -> friendly names from Baserow
-    rows.forEach(r => {
-      r.bird_name = r.field_6258635;
-      r.bird_id   = r.field_6258636;
-      r.action    = r.field_6258637;
-      r.date      = r.field_6258638;
-      r.territory = r.field_6258639;
-      r.latitude  = r.field_6258640;
-      r.longitude = r.field_6318262;
-    });
+  if(!rows.length){
+    statusEl.textContent="No observations yet.";
+    return;
+  }
 
-    if (!rows.length) {
-      statusEl.textContent = "No observations yet.";
-      tableContainer.innerHTML = "";
-      return;
+  // MAP FIELD IDs → readable
+  rows.forEach(r=>{
+    r.bird_name=r.field_6258635;
+    r.bird_id=r.field_6258636;
+    r.action=r.field_6258637;
+    r.date=r.field_6258638;
+    r.territory=r.field_6258639;
+    r.latitude=r.field_6258640;
+    r.longitude=r.field_6318262;
+  });
+
+  statusEl.textContent=`Showing ${rows.length} most recent observations.`;
+
+  const table=document.createElement("table");
+  table.innerHTML=`
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Bird</th>
+      <th>Action</th>
+      <th>Date</th>
+      <th>Location</th>
+    </tr>
+  </thead>`;
+
+  const tbody=document.createElement("tbody");
+
+  rows.forEach(row=>{
+    const tr=document.createElement("tr");
+
+    const idCell=document.createElement("td");
+    idCell.setAttribute("data-label","ID");
+    idCell.textContent=row.id;
+    tr.appendChild(idCell);
+
+    const birdCell=document.createElement("td");
+    birdCell.setAttribute("data-label","Bird");
+    birdCell.innerHTML=`
+      <div>${row.bird_name||"(unnamed)"}</div>
+      <div class="small">${row.bird_id?"("+row.bird_id+")":""}</div>
+    `;
+    tr.appendChild(birdCell);
+
+    const actionCell=document.createElement("td");
+    actionCell.setAttribute("data-label","Action");
+    const cls=getActionClass(row.action);
+    const label=getActionLabel(row.action);
+    actionCell.innerHTML=label?`<span class="${cls}">${label}</span>`:"";
+    tr.appendChild(actionCell);
+
+    const dateCell=document.createElement("td");
+    dateCell.setAttribute("data-label","Date");
+    dateCell.textContent=row.date?row.date.replace("T"," ").slice(0,16):"";
+    tr.appendChild(dateCell);
+
+    const locCell=document.createElement("td");
+    locCell.setAttribute("data-label","Location");
+    const lat=formatCoord(row.latitude);
+    const lon=formatCoord(row.longitude);
+
+    if(row.territory && lat && lon){
+      locCell.textContent=`${row.territory} – ${lat}, ${lon}`;
+    } else if(row.territory){
+      locCell.textContent=row.territory;
+    } else if(lat && lon){
+      locCell.textContent=`${lat}, ${lon}`;
+    } else {
+      locCell.textContent="No coordinates";
     }
 
-    statusEl.textContent = "Showing " + rows.length + " most recent observations.";
+    tr.appendChild(locCell);
 
-    const table = document.createElement("table");
-
-    table.innerHTML = `
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Bird</th>
-          <th>Action</th>
-          <th>Date</th>
-          <th>Location</th>
-        </tr>
-      </thead>
-    `;
-
-    const tbody = document.createElement("tbody");
-
-    rows.forEach(row => {
-      const tr = document.createElement("tr");
-
-      // Row ID
-      const idCell = document.createElement("td");
-      idCell.setAttribute("data-label", "ID");
-      idCell.textContent = row.id ?? "";
-      tr.appendChild(idCell);
-
-      // Bird
-      const birdCell = document.createElement("td");
-      birdCell.setAttribute("data-label", "Bird");
-      birdCell.innerHTML = `
-        <div>${row.bird_name || "(unnamed)"}</div>
-        <div class="small">${row.bird_id ? "(" + row.bird_id + ")" : ""}</div>
-      `;
-      tr.appendChild(birdCell);
-
-      // Action
-      const actionCell = document.createElement("td");
-      actionCell.setAttribute("data-label", "Action");
-      const cls = getActionClass(row.action);
-      const label = getActionLabel(row.action);
-      actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
-      tr.appendChild(actionCell);
-
-      // Date
-      const dateCell = document.createElement("td");
-      dateCell.setAttribute("data-label", "Date");
-      dateCell.textContent = formatDate(row.date);
-      tr.appendChild(dateCell);
-
-      // Location
-      const locCell = document.createElement("td");
-      locCell.setAttribute("data-label", "Location");
-
-      const lat = formatCoord(row.latitude);
-      const lon = formatCoord(row.longitude);
-
-if (row.territory && (lat || lon)) {
-  locCell.textContent = `${row.territory} – ${lat || "?"}, ${lon || "?"}`;
-} else if (row.territory) {
-  locCell.textContent = row.territory;
-} else if (lat || lon) {
-if (lat && lon) {
-  locCell.textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
-} else if (lat) {
-  locCell.textContent = `${lat.toFixed(5)}`;
-} else if (lon) {
-  locCell.textContent = `${lon.toFixed(5)}`;
-} else {
-  locCell.textContent = "No coordinates";
-}
-} else {
-  locCell.textContent = "No coordinates";
-}
-
-
-      tr.appendChild(locCell);
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    tableContainer.innerHTML = "";
-    tableContainer.appendChild(table);
-  })
-  .catch(err => {
-    console.error("Error loading observations:", err);
-    statusEl.textContent = "Failed to load observations.";
-    tableContainer.innerHTML = "";
+    tbody.appendChild(tr);
   });
+
+  table.appendChild(tbody);
+  tableContainer.innerHTML="";
+  tableContainer.appendChild(table);
+})
+.catch(err=>{
+  console.error(err);
+  statusEl.textContent="Failed to load observations.";
+});
 </script>
 
 </body>
