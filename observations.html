@@ -264,7 +264,15 @@ if (row.territory && (lat || lon)) {
 } else if (row.territory) {
   locCell.textContent = row.territory;
 } else if (lat || lon) {
-  locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
+if (lat && lon) {
+  locCell.textContent = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+} else if (lat) {
+  locCell.textContent = `${lat.toFixed(5)}`;
+} else if (lon) {
+  locCell.textContent = `${lon.toFixed(5)}`;
+} else {
+  locCell.textContent = "No coordinates";
+}
 } else {
   locCell.textContent = "No coordinates";
 }
