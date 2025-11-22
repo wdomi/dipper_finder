@@ -8,9 +8,9 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "BASEROW_TOKEN not configured" });
   }
 
-  // ✅ FIX: use row_id instead of id
+  // ✅ NO order_by in request
   const BASEROW_ENDPOINT =
-    "https://api.baserow.io/api/database/rows/table/742957/?order_by=-row_id&page_size=100";
+    "https://api.baserow.io/api/database/rows/table/742957/?page_size=100&user_field_names=false";
 
   try {
     const response = await fetch(BASEROW_ENDPOINT, {
@@ -28,7 +28,13 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    res.status(200).json({ results: data.results || [] });
+
+    // ✅ sort newest first using internal primary key
+    const sorted = (data.results || []).sort((a, b) =>
+      (b.id ?? 0) - (a.id ?? 0)
+    );
+
+    res.status(200).json({ results: sorted });
   } catch (err) {
     console.error("Error fetching observations from Baserow", err);
     res.status(500).json({ error: "Server error" });
