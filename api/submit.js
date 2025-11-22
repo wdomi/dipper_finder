@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     action,
     latitude,
     longitude,
-    field_6258639
+    territory   // ✅ FIX: frontend sends "territory"
   } = req.body;
 
   const payload = {
@@ -22,9 +22,9 @@ export default async function handler(req, res) {
     field_6258636: bird_id,
     field_6258637: action,
     field_6258638: new Date().toISOString(),
-    field_6258639: field_6258639 || "",
-    field_6258640: latitude,
-    field_6318262: longitude
+    field_6258639: territory || "",   // ✅ FIX: correctly mapped
+    field_6258640: latitude,          // ✅ latitude
+    field_6318262: longitude          // ✅ longitude
   };
 
   try {
