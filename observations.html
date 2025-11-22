@@ -25,9 +25,6 @@ header{
 h1{
   font-size:22px;
   margin:0;
-  display:flex;
-  align-items:center;
-  gap:8px;
 }
 .subtitle{
   font-size:13px;
@@ -131,7 +128,7 @@ const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
   if (action && typeof action === "object") {
-    if (action.value) return action.value;
+    return action.value || "";
   }
   return "";
 }
@@ -147,106 +144,103 @@ function getActionClass(action) {
 function formatCoord(value) {
   if (value == null || value === "") return "";
   const n = Number(value);
-  if (Number.isNaN(n)) return String(value);
+  if (Number.isNaN(n)) return "";
   return n.toFixed(5);
 }
 
-document.getElementById("backBtn").addEventListener("click", () => {
-  window.location.href = "/";
+document.getElementById("backBtn").addEventListener("click", ()=>{
+  window.location.href="/";
 });
 
-const statusEl = document.getElementById("status");
-const tableContainer = document.getElementById("tableContainer");
+const statusEl=document.getElementById("status");
+const tableContainer=document.getElementById("tableContainer");
 
 fetch("/api/observations")
-  .then(r => {
-    if (!r.ok) throw new Error("HTTP " + r.status);
-    return r.json();
-  })
-  .then(data => {
-    const rows = data.results || [];
+  .then(r=>r.json())
+  .then(data=>{
+    const rows=data.results||[];
 
-    if (!rows.length) {
-      statusEl.textContent = "No observations yet.";
-      tableContainer.innerHTML = "";
+    if(!rows.length){
+      statusEl.textContent="No observations yet.";
       return;
     }
 
-    statusEl.textContent = "Showing " + rows.length + " most recent observations.";
+    statusEl.textContent=`Showing ${rows.length} most recent observations.`;
 
-    const table = document.createElement("table");
-
-    table.innerHTML = `
+    const table=document.createElement("table");
+    table.innerHTML=`
       <thead>
         <tr>
-          <th>ID</th>
+          <th>Date</th>
           <th>Bird</th>
           <th>Action</th>
-          <th>Date</th>
+          <th>Territory</th>
           <th>Latitude</th>
           <th>Longitude</th>
         </tr>
       </thead>
     `;
 
-    const tbody = document.createElement("tbody");
+    const tbody=document.createElement("tbody");
 
-    rows.forEach(row => {
-      const tr = document.createElement("tr");
+    rows.forEach(row=>{
+      const tr=document.createElement("tr");
 
-      // ID
-      const idCell = document.createElement("td");
-      idCell.setAttribute("data-label", "ID");
-      idCell.textContent = row.id ?? "";
-      tr.appendChild(idCell);
+      // Date (from system field)
+      const dateCell=document.createElement("td");
+      dateCell.setAttribute("data-label","Date");
+      const dt=row.field_6258638
+        ? row.field_6258638.replace("T"," ").slice(0,16)
+        : "";
+      dateCell.textContent=dt;
+      tr.appendChild(dateCell);
 
       // Bird
-      const birdCell = document.createElement("td");
-      birdCell.setAttribute("data-label", "Bird");
-      birdCell.innerHTML = `
-        <div>${row.field_6258635 || "(unnamed)"}</div>
-        <div class="small">${row.field_6258636 ? "(" + row.field_6258636 + ")" : ""}</div>
+      const birdCell=document.createElement("td");
+      birdCell.setAttribute("data-label","Bird");
+      birdCell.innerHTML=`
+        <div>${row.field_6258635||"(unnamed)"}</div>
+        <div class="small">${row.field_6258636?"("+row.field_6258636+")":""}</div>
       `;
       tr.appendChild(birdCell);
 
       // Action
-      const actionCell = document.createElement("td");
-      actionCell.setAttribute("data-label", "Action");
-      const cls = getActionClass(row.field_6258637);
-      const label = getActionLabel(row.field_6258637);
-      actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
+      const actionCell=document.createElement("td");
+      actionCell.setAttribute("data-label","Action");
+      const cls=getActionClass(row.field_6258637);
+      const label=getActionLabel(row.field_6258637);
+      actionCell.innerHTML=label?`<span class="${cls}">${label}</span>`:"";
       tr.appendChild(actionCell);
 
-      // Date
-      const dateCell = document.createElement("td");
-      dateCell.setAttribute("data-label", "Date");
-      const dt = row.field_6258638 ? row.field_6258638.split("T")[0] + " " + row.field_6258638.split("T")[1].substring(0,5) : "";
-      dateCell.textContent = dt || "";
-      tr.appendChild(dateCell);
+      // Territory
+      const terrCell=document.createElement("td");
+      terrCell.setAttribute("data-label","Territory");
+      terrCell.textContent=row.field_6258639||"";
+      tr.appendChild(terrCell);
 
       // Latitude
-      const latCell = document.createElement("td");
-      latCell.setAttribute("data-label", "Latitude");
-      latCell.textContent = formatCoord(row.field_6258640) || "";
+      const latCell=document.createElement("td");
+      latCell.setAttribute("data-label","Latitude");
+      latCell.textContent=formatCoord(row.field_6258640)||"";
       tr.appendChild(latCell);
 
       // Longitude
-      const lonCell = document.createElement("td");
-      lonCell.setAttribute("data-label", "Longitude");
-      lonCell.textContent = formatCoord(row.field_6318262) || "";
+      const lonCell=document.createElement("td");
+      lonCell.setAttribute("data-label","Longitude");
+      lonCell.textContent=formatCoord(row.field_6318262)||"";
       tr.appendChild(lonCell);
 
       tbody.appendChild(tr);
     });
 
     table.appendChild(tbody);
-    tableContainer.innerHTML = "";
+    tableContainer.innerHTML="";
     tableContainer.appendChild(table);
   })
-  .catch(err => {
+  .catch(err=>{
     console.error("Error loading observations:", err);
-    statusEl.textContent = "Failed to load observations.";
-    tableContainer.innerHTML = "";
+    statusEl.textContent="Failed to load observations.";
+    tableContainer.innerHTML="";
   });
 </script>
 
