@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>My Dipper Finder </title>
+<title>Dipper Finder</title>
 <link rel="icon" href="/favicon.png" type="image/png">
 
 <style>
@@ -20,16 +20,16 @@ h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
 .section{ background:white; border-radius:10px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0; }
 .leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
 
-.color-grid { display: grid; gap: 4px; padding: 2px; }
-.color-grid.top-row { grid-template-columns: repeat(5, 1fr); }
-.color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
+.color-grid { display:grid; gap:4px; padding:2px; }
+.color-grid.top-row { grid-template-columns:repeat(5,1fr); }
+.color-grid.bottom-row { grid-template-columns:repeat(5,1fr); }
 
 button.color {
-  font-size: 12px;
+  font-size:12px;
   font-weight:700;
-  padding: 2px 4px;
-  height: 28px;
-  border-radius: 6px;
+  padding:2px 4px;
+  height:28px;
+  border-radius:6px;
   border:2px solid transparent;
   cursor:pointer;
   text-align:center;
@@ -47,7 +47,6 @@ button.color.selected { border-color:#000; }
 .white{ background:#eee; color:black; border:1px solid #999; }
 
 .submit-area{ margin-top:6px; }
-/* button + link row */
 .submit-row{
   display:flex;
   align-items:center;
@@ -57,7 +56,6 @@ button.color.selected { border-color:#000; }
 }
 .submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
 
-/* link to observations */
 .obs-link{
   font-size:14px;
   color:#555;
@@ -65,7 +63,6 @@ button.color.selected { border-color:#000; }
   cursor:pointer;
 }
 
-/* small dark grey text */
 .small-muted{
   font-size:12px;
   color:#555;
@@ -115,20 +112,12 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   margin:0 0 6px;
   font-size:18px;
 }
-.modal-section{
-  margin-bottom:8px;
-}
+.modal-section{ margin-bottom:8px; }
 .modal-list{
   max-height:160px;
   overflow:auto;
   padding-left:18px;
   margin:4px 0;
-}
-.modal-row{
-  margin-bottom:3px;
-}
-.modal-row span.label{
-  font-weight:600;
 }
 .modal-footer{
   display:flex;
@@ -168,7 +157,7 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 }
 
 @media (max-width:520px){
-  .color-grid.top-row, .color-grid.bottom-row { grid-template-columns: repeat(5, 1fr); }
+  .color-grid.top-row, .color-grid.bottom-row { grid-template-columns:repeat(5,1fr); }
   th, td{ padding:6px 4px; font-size:13px; }
   h1{ font-size:22px; }
 }
@@ -223,7 +212,6 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
         <label for="territorySelect">Override / add territory:</label>
         <select id="territorySelect">
           <option value="">None</option>
-          <!-- options filled by JS -->
         </select>
       </div>
       <div class="small-muted">
@@ -239,7 +227,6 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 </div>
 
 <script>
-/* CSV is served locally from the project root on Vercel */
 const CSV_URL="/view_birdsCSV_apps.csv";
 const ACTION_IDS={sighted:4519311, maybe:4519312};
 const topColors=["alu","red","blue","pink","white"];
@@ -257,7 +244,7 @@ const colorCodeMap={
   white:{code:"wht",color:"#eee"}
 };
 
-/* Territory list (name + coords) */
+/* Territory list */
 const TERRITORIES = [
   { name: "Muur",              lat: 46.624955,         lon: 10.193195 },
   { name: "Wehr",              lat: 46.6284110862761,  lon: 10.194532983005 },
@@ -300,7 +287,6 @@ function normalizeColorKey(s){
   if(s.startsWith("wh")||s==="wht") return "white";
   return s;
 }
-
 function codePillFor(raw){
   const key=normalizeColorKey(raw);
   const meta=colorCodeMap[key];
@@ -309,7 +295,6 @@ function codePillFor(raw){
   const bg=(meta.code==="wht")?"#eee":"transparent";
   return `<span class="code-pill" style="color:${textColor};background:${bg}">${meta.code}</span>`;
 }
-
 function escapeHtml(s){
   return String(s||"").replaceAll("&","&amp;")
     .replaceAll("<","&lt;")
@@ -459,8 +444,8 @@ function renderFilteredTable(){
     btnMaybe.textContent="Maybe";
 
     const cur=perBirdSelection.get(row.bird_id)||null;
-    if(cur==="sighted") btnSight.classList.add("toggle-on");
-    if(cur==="maybe") btnMaybe.classList.add("toggle-on");
+    if(cur==="sighted") btnSight.classList.add("toggle-on","sighted");
+    if(cur==="maybe") btnMaybe.classList.add("toggle-on","maybe");
 
     btnSight.addEventListener("click", ()=>{
       perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted");
@@ -496,9 +481,7 @@ const cancelSubmitBtn = document.getElementById("cancelSubmitBtn");
 let pendingEntries=null;
 let pendingGps={lat:null, lon:null};
 
-// Fill territory dropdown
 function populateTerritorySelect(){
-  // keep "None" as first
   TERRITORIES.forEach(t=>{
     const opt=document.createElement("option");
     opt.value=t.name;
@@ -512,7 +495,6 @@ function openConfirmModal(entries, gps){
   pendingEntries = entries;
   pendingGps = gps;
 
-  // Fill birds list
   confirmListEl.innerHTML="";
   const ul=document.createElement("ul");
   ul.style.margin="4px 0";
@@ -527,14 +509,12 @@ function openConfirmModal(entries, gps){
   });
   confirmListEl.appendChild(ul);
 
-  // Location text
   if (gps && gps.lat!=null && gps.lon!=null){
     confirmLocationTextEl.textContent = `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)}`;
   } else {
     confirmLocationTextEl.textContent = "NOT AVAILABLE";
   }
 
-  // reset territory selection
   territorySelectEl.value = "";
 
   modalEl.classList.add("show");
@@ -544,7 +524,6 @@ function openConfirmModal(entries, gps){
 function closeConfirmModal(){
   modalEl.classList.remove("show");
   modalEl.setAttribute("aria-hidden","true");
-  pendingEntries=null;
 }
 
 /* Get GPS (may fail gracefully) */
@@ -564,7 +543,7 @@ async function getGps(){
   });
 }
 
-/* Original submit button now just prepares entries + GPS and shows modal */
+/* Submit button */
 document.getElementById("submitBtn").addEventListener("click", async ()=>{
   const entries=[];
   for(const [bird_id,val] of perBirdSelection.entries()){
@@ -585,6 +564,8 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
 
 /* Cancel inside modal */
 cancelSubmitBtn.addEventListener("click", ()=>{
+  pendingEntries = null;
+  pendingGps = null;
   closeConfirmModal();
 });
 
@@ -599,11 +580,6 @@ confirmSubmitBtn.addEventListener("click", async ()=>{
   const selectedName = territorySelectEl.value;
   const selectedTerritory = TERRITORIES.find(t=>t.name===selectedName) || null;
 
-  // Determine how to send coords/territory based on selection:
-  // If a territory is chosen -> ignore GPS, send only territory text, coords null.
-  // If no territory chosen:
-  //    - if GPS available -> send GPS, territory=""
-  //    - otherwise -> coords null, territory=""
   let finalLat = gps.lat;
   let finalLon = gps.lon;
   let territoryText = "";
@@ -613,7 +589,6 @@ confirmSubmitBtn.addEventListener("click", async ()=>{
     finalLon = null;
     territoryText = `${selectedTerritory.name} (${selectedTerritory.lat}, ${selectedTerritory.lon})`;
   } else {
-    // no territory override
     if (gps.lat==null || gps.lon==null){
       finalLat = null;
       finalLon = null;
@@ -653,6 +628,8 @@ confirmSubmitBtn.addEventListener("click", async ()=>{
   }
 
   showToast(`Submitted ${successCount}/${pendingEntries.length}`);
+  pendingEntries = null;
+  pendingGps = null;
   perBirdSelection.clear();
   renderFilteredTable();
 });
