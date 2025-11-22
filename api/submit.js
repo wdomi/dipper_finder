@@ -22,9 +22,9 @@ export default async function handler(req, res) {
     field_6258636: bird_id,
     field_6258637: action,
     // ✅ REMOVE created_on field_6258638 (Baserow sets automatically)
-    field_6258639: territory || "",
-    field_6258640: latitude,
-    field_6318262: longitude
+    field_6258639: latitude,
+field_6258640: longitude,
+field_6318262: territory || ""
   };
 
   try {
