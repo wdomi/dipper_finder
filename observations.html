@@ -113,7 +113,7 @@ th{
 <header>
   <div>
     <h1>Recent Dipper Observations</h1>
-    <div class="subtitle">Most recent first (from Baserow sightings table)</div>
+    <div class="subtitle">Most recent first (from Baserow)</div>
   </div>
   <button class="back-btn" id="backBtn">Back to Dipper Finder</button>
 </header>
@@ -127,9 +127,7 @@ th{
 const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
-  if (action && typeof action === "object") {
-    return action.value || "";
-  }
+  if (action && typeof action === "object") return action.value || "";
   return "";
 }
 
@@ -186,7 +184,7 @@ fetch("/api/observations")
     rows.forEach(row=>{
       const tr=document.createElement("tr");
 
-      // Date (from system field)
+      // Date
       const dateCell=document.createElement("td");
       dateCell.setAttribute("data-label","Date");
       const dt=row.field_6258638
