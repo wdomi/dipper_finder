@@ -586,8 +586,8 @@ confirmSubmitBtn.addEventListener("click", async ()=>{
 
   if (selectedTerritory){
   // ✅ save territory name AND GPS coords
-  finalLat = selectedTerritory.lat;
-  finalLon = selectedTerritory.lon;
+  finalLat = Number(selectedTerritory.lat.toFixed(10));
+finalLon = Number(selectedTerritory.lon.toFixed(10));
   territoryText = selectedTerritory.name;
 } else {
   // ✅ GPS fallback
