@@ -127,17 +127,16 @@ th{
 </div>
 
 <script>
-// Values set in your Baserow table (ID numbers)
 const ACTION_IDS = { sighted: 4519311, maybe: 4519312 };
 
 function getActionLabel(action) {
   if (action && typeof action === "object") {
     if (action.value) return action.value;
-    if (action.id === ACTION_IDS.sighted) return "Sighted";
-    if (action.id === ACTION_IDS.maybe) return "Maybe";
+    if (action.id === ACTION_IDS.sighted) return "sighted";
+    if (action.id === ACTION_IDS.maybe) return "maybe";
   }
-  if (action === ACTION_IDS.sighted) return "Sighted";
-  if (action === ACTION_IDS.maybe) return "Maybe";
+  if (action === ACTION_IDS.sighted) return "sighted";
+  if (action === ACTION_IDS.maybe) return "maybe";
   return "";
 }
 
@@ -158,6 +157,18 @@ function formatCoord(value) {
   return n.toFixed(5);
 }
 
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const day = String(d.getDate()).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mm = String(d.getMinutes()).padStart(2,"0");
+  return `${y}-${m}-${day} ${hh}:${mm}`;
+}
+
 // Back button → go to root
 document.getElementById("backBtn").addEventListener("click", () => {
   window.location.href = "/";
@@ -172,18 +183,18 @@ fetch("/api/observations")
     return r.json();
   })
   .then(data => {
-    const rows = data.results || [];
+    let rows = data.results || [];
 
-    // Map field IDs to readable names
-rows.forEach(r => {
-  r.bird_name = r.field_6258635;
-  r.bird_id = r.field_6258636;
-  r.action = r.field_6258637;
-  r.date = r.field_6258638;
-  r.territory = r.field_6258639;
-  r.latitude = r.field_6258640;
-  r.longitude = r.field_6318262;
-});
+    // map field IDs -> friendly names from Baserow
+    rows.forEach(r => {
+      r.bird_name = r.field_6258635;
+      r.bird_id   = r.field_6258636;
+      r.action    = r.field_6258637;
+      r.date      = r.field_6258638;
+      r.territory = r.field_6258639;
+      r.latitude  = r.field_6258640;
+      r.longitude = r.field_6318262;
+    });
 
     if (!rows.length) {
       statusEl.textContent = "No observations yet.";
@@ -235,26 +246,28 @@ rows.forEach(r => {
       actionCell.innerHTML = label ? `<span class="${cls}">${label}</span>` : "";
       tr.appendChild(actionCell);
 
-// Location
-const locCell = document.createElement("td");
-locCell.setAttribute("data-label", "Location");
+      // Date
+      const dateCell = document.createElement("td");
+      dateCell.setAttribute("data-label", "Date");
+      dateCell.textContent = formatDate(row.date);
+      tr.appendChild(dateCell);
 
-const lat = formatCoord(row.latitude);
-const lon = formatCoord(row.longitude);
+      // Location
+      const locCell = document.createElement("td");
+      locCell.setAttribute("data-label", "Location");
 
-if (row.territory) {
-  // Territory chosen or assigned
-  locCell.textContent = row.territory;
-} else if (lat || lon) {
-  // GPS available
-  locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
-} else {
-  // Nothing available
-  locCell.textContent = "No coordinates";
-}
+      const lat = formatCoord(row.latitude);
+      const lon = formatCoord(row.longitude);
 
-tr.appendChild(locCell);
+      if (row.territory) {
+        locCell.textContent = row.territory;
+      } else if (lat || lon) {
+        locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
+      } else {
+        locCell.textContent = "No coordinates";
+      }
 
+      tr.appendChild(locCell);
 
       tbody.appendChild(tr);
     });
