@@ -259,13 +259,16 @@ fetch("/api/observations")
       const lat = formatCoord(row.latitude);
       const lon = formatCoord(row.longitude);
 
-      if (row.territory) {
-        locCell.textContent = row.territory;
-      } else if (lat || lon) {
-        locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
-      } else {
-        locCell.textContent = "No coordinates";
-      }
+if (row.territory && (lat || lon)) {
+  locCell.textContent = `${row.territory} – ${lat || "?"}, ${lon || "?"}`;
+} else if (row.territory) {
+  locCell.textContent = row.territory;
+} else if (lat || lon) {
+  locCell.textContent = `${lat || "?"}, ${lon || "?"}`;
+} else {
+  locCell.textContent = "No coordinates";
+}
+
 
       tr.appendChild(locCell);
 
