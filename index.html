@@ -34,6 +34,37 @@ header{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
   opacity: 0.85;
 }
 
+  .header-top-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.header-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* spacing between the two buttons */
+}
+
+.goto-btn {
+  background: var(--accent);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.goto-btn:hover {
+  opacity: 0.85;
+}
+
+
 h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
 .bird-img{ width:48px; height:48px; object-fit:contain; }
 .top-actions{ display:flex; gap:12px; align-items:center; }
@@ -188,14 +219,14 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 <body>
 <header>
 
-  <!-- TOP ROW: title left, nest-logger button right -->
+  <!-- TOP ROW: title left, links right -->
   <div class="header-top-row">
     <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper Finder</h1>
 
-    <a href="https://nest-logger.vercel.app"
-       class="goto-nestlogger-btn">
-       Nest Logger
-    </a>
+    <div class="header-buttons">
+      <a href="https://nest-logger.vercel.app" class="goto-btn">Nest Logger</a>
+      <a href="https://wdomi.github.io/dipper_map/" class="goto-btn">Nests Map</a>
+    </div>
   </div>
 
   <!-- SECOND ROW: reset + instructions -->
@@ -205,6 +236,7 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   </div>
 
 </header>
+
 
 
 <div class="section" aria-labelledby="right-leg">
