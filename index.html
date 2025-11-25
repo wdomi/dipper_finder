@@ -186,10 +186,17 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 </div>
 
 <div class="submit-area">
-  <div class="submit-row">
+ <div class="submit-row">
     <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+
+    <!-- ✅ NEW BUTTON -->
+    <button class="submit-btn" id="unringedBtn" style="background:#444;">
+      Sighted unringed dipper
+    </button>
+
     <a href="observations.html" class="obs-link">View last observations</a>
-  </div>
+</div>
+
   <div class="small-muted">Your location will be requested when submitting sightings.</div>
 </div>
 
@@ -562,6 +569,27 @@ document.getElementById("submitBtn").addEventListener("click", async ()=>{
   openConfirmModal(entries, gps);
 });
 
+  /* ---- NEW: Submit an unringed dipper ---- */
+
+document.getElementById("unringedBtn").addEventListener("click", async () => {
+
+  // Same GPS retrieval as normal sightings
+  const gps = await getGps();
+
+  // Prepare a pseudo-entry for the modal
+  const unringedEntry = {
+    row: {
+      name: "unringed",
+      bird_id: "",   // NULL in Baserow
+    },
+    action: "sighted"
+  };
+
+  // open the modal (reuses same logic)
+  openConfirmModal([unringedEntry], gps);
+});
+
+
 /* Cancel inside modal */
 cancelSubmitBtn.addEventListener("click", ()=>{
   pendingEntries = null;
@@ -608,14 +636,15 @@ finalLon = Number(selectedTerritory.lon.toFixed(10));
 
   let successCount=0;
   for(const e of pendingEntries){
-    const payload={
-      bird_name:e.row.name,
-      bird_id:e.row.bird_id,
-      action:e.action==="sighted"?ACTION_IDS.sighted:ACTION_IDS.maybe,
-      latitude:finalLat,
-      longitude:finalLon,
-      territory:territoryText
-    };
+        const payload = {
+          bird_name: e.row.name,
+          bird_id: e.row.bird_id || null,
+          action: e.action==="sighted" ? ACTION_IDS.sighted : ACTION_IDS.maybe,
+          latitude: finalLat,
+          longitude: finalLon,
+          territory: territoryText
+        };
+
     try{
       const r=await fetch("/api/submit",{
         method:"POST",
