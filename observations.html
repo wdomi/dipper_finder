@@ -156,8 +156,10 @@ const tableContainer=document.getElementById("tableContainer");
 fetch("/api/observations")
   .then(r=>r.json())
   .then(data=>{
-    const rows=data.results||[];
-
+// hide rows where deleted == true (field_6351349)
+const rows = (data.results || []).filter(r =>
+  !r.field_6351349
+);
     if(!rows.length){
       statusEl.textContent="No observations yet.";
       return;
@@ -175,6 +177,7 @@ fetch("/api/observations")
           <th>Territory</th>
           <th>Latitude</th>
           <th>Longitude</th>
+          <th>Delete</th>   <!-- ✅ NEW -->
         </tr>
       </thead>
     `;
@@ -227,6 +230,49 @@ fetch("/api/observations")
       lonCell.setAttribute("data-label","Longitude");
       lonCell.textContent=formatCoord(row.field_6258640) || "";
       tr.appendChild(lonCell);
+
+      // DELETE checkbox
+          const delCell = document.createElement("td");
+          delCell.setAttribute("data-label", "Delete");
+          
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.style.transform = "scale(1.2)";
+          cb.checked = false;
+          
+          cb.addEventListener("change", async () => {
+            if (!cb.checked) return; // do nothing (you only allow deleting)
+          
+            const ok = confirm("Are you sure you want to delete this observation?");
+            if (!ok) {
+              cb.checked = false;
+              return;
+            }
+          
+            // call delete API
+            try {
+              const r = await fetch("/api/deleteObservation", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: row.id })
+              });
+          
+              if (r.ok) {
+                tr.remove(); // visually remove row
+              } else {
+                alert("Failed to delete.");
+                cb.checked = false;
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Network error.");
+              cb.checked = false;
+            }
+          });
+          
+          delCell.appendChild(cb);
+          tr.appendChild(delCell);
+
 
       tbody.appendChild(tr);
     });
