@@ -14,7 +14,28 @@
 body{ font-family:system-ui, -apple-system,"Segoe UI",Roboto,Arial; margin:0; padding:12px; background:#f8f8f8; color:#222; }
 header{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 
-.header-top-row {
+  .header-top-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between; /* pushes title left + button right */
+  align-items: center;
+}
+.goto-nestlogger-btn {
+  background: var(--accent);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+    text-align:center !important;
+}
+.goto-nestlogger-btn:hover {
+  opacity: 0.85;
+}
+
+  .header-top-row {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -24,7 +45,7 @@ header{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
 .header-buttons {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 6px; /* spacing between the two buttons */
 }
 
 .goto-btn {
@@ -44,33 +65,27 @@ header{ display:flex; flex-direction:column; gap:8px; margin-bottom:6px; }
   opacity: 0.85;
 }
 
+
 h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
 .bird-img{ width:48px; height:48px; object-fit:contain; }
 .top-actions{ display:flex; gap:12px; align-items:center; }
-
-/* RESET BUTTON */
-.reset-btn{
-  background:#e6e6e6;
-  border:1px solid #bbb;
-  padding:8px 12px;
-  border-radius:999px;
-  cursor:pointer;
-  font-size:14px;
-}
-
-/* MAKE SUBMIT BUTTONS MATCH RESET */
-.submit-btn{
+.reset-btn{ background:#e6e6e6; border:1px solid #bbb; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:14px; }
+/* Make submit buttons identical to Reset button */
+.submit-btn {
   background:#e6e6e6 !important;
   border:1px solid #bbb !important;
-  color:#222 !important;
+    color:#222 !important;
   padding:8px 12px !important;
   border-radius:999px !important;
   cursor:pointer;
   font-size:14px !important;
-  text-align:center !important;
+  color:#222 !important;
+    text-align:center !important;
+  /*box-shadow:0 1px 2px rgba(0,0,0,0.15); ← darker edge */
 }
 
-/* SECTION & GRID */
+
+  
 .section{ background:white; border-radius:10px; padding:8px; box-shadow:0 1px 4px rgba(0,0,0,0.06); margin:8px 0; }
 .leg-title{ font-weight:600; margin:6px 4px 4px; font-size:14px; }
 
@@ -100,7 +115,6 @@ button.color.selected { border-color:#000; }
 .pink{ background:hotpink; color:white; }
 .white{ background:#eee; color:black; border:1px solid #999; }
 
-/* Submit row */
 .submit-area{ margin-top:6px; }
 .submit-row{
   display:flex;
@@ -109,6 +123,7 @@ button.color.selected { border-color:#000; }
   gap:8px;
   flex-wrap:wrap;
 }
+.submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
 
 .obs-link{
   font-size:14px;
@@ -117,15 +132,15 @@ button.color.selected { border-color:#000; }
   cursor:pointer;
 }
 
-/* Italic location note */
 .small-muted{
   font-size:12px;
   color:#555;
 }
-.small-muted.location-note {
+  .small-muted.location-note {
   font-style: italic;
-  color:#888;
+  color:#888; /* slightly lighter grey */
 }
+
 
 #results{ margin-top:10px; text-align:left; }
 table{ width:100%; border-collapse:collapse; font-size:14px; }
@@ -141,7 +156,6 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 .toggle-on.maybe{ background:#ffe9a3; border-color:#d4a22b; }
 
 .code-pill{ display:inline-block; padding:2px 6px; border-radius:6px; font-weight:700; margin-right:4px; }
-
 .toast{ position:fixed; right:16px; bottom:16px; background:rgba(0,0,0,0.8); color:white; padding:10px 12px; border-radius:8px; display:none; }
 .toast.show{ display:block; }
 
@@ -155,8 +169,9 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   justify-content:center;
   z-index:1000;
 }
-.modal-overlay.show{ display:flex; }
-
+.modal-overlay.show{
+  display:flex;
+}
 .modal{
   background:#fff;
   color:#222;
@@ -167,12 +182,10 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   box-shadow:0 4px 14px rgba(0,0,0,0.25);
   font-size:14px;
 }
-
 .modal h2{
   margin:0 0 6px;
   font-size:18px;
 }
-
 .modal-section{ margin-bottom:8px; }
 .modal-list{
   max-height:160px;
@@ -180,7 +193,6 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   padding-left:18px;
   margin:4px 0;
 }
-
 .modal-footer{
   display:flex;
   justify-content:flex-end;
@@ -202,12 +214,14 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 .modal-footer .secondary{
   background:#eee;
 }
-
 .modal-territory-row{
   display:flex;
   align-items:center;
   gap:6px;
   flex-wrap:wrap;
+}
+.modal-territory-row label{
+  font-size:13px;
 }
 .modal-territory-row select{
   font-size:13px;
@@ -221,29 +235,69 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   th, td{ padding:6px 4px; font-size:13px; }
   h1{ font-size:22px; }
 }
+
+  /* --- ONLY UI NAVIGATION & SUBMIT BUTTONS GET NEW STYLE --- */
+
+.round-btn {
+  padding:6px 12px;               /* smaller padding */
+  border-radius:999px;            /* fully rounded */
+  border:1px solid #bbb;          /* light border */
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+  background:#eee;
+  color:#222;
+}
+
+/* Primary version (accent background) */
+.round-btn-primary {
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+
+  /* Allow submit buttons to become rounded */
+.submit-btn.round-btn,
+.submit-btn.round-btn-primary {
+  border-radius:999px !important;
+  border:1px solid transparent !important;
+  padding:6px 12px !important;
+  text-align:center !important;
+}
+
+  
+/* Hover effect */
+.round-btn:hover,
+.round-btn-primary:hover {
+  opacity:0.85;
+}
+
 </style>
 </head>
 
 <body>
 <header>
 
-  <!-- TOP ROW -->
+  <!-- TOP ROW: title left, links right -->
   <div class="header-top-row">
     <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper Finder</h1>
 
     <div class="header-buttons">
-      <a href="https://nest-logger.vercel.app" class="goto-btn">Nest Logger</a>
-      <a href="https://wdomi.github.io/dipper_map/" class="goto-btn">Nests Map</a>
+      <a href="https://nest-logger.vercel.app" class="round-btn round-btn-primary">Nest Logger</a>
+      <a href="https://wdomi.github.io/dipper_map/" class="round-btn round-btn-primary">Nests Map</a>
     </div>
   </div>
 
-  <!-- Second row -->
+  <!-- SECOND ROW: reset + instructions -->
   <div class="top-actions">
-    <button class="reset-btn" id="resetColorsBtn">Reset</button>
+    <button class="reset-btn round-btn" id="resetColorsBtn">Reset</button>
     <div class="small-muted">Select up to 2 colors per leg</div>
   </div>
 
 </header>
+
+
 
 <div class="section" aria-labelledby="right-leg">
   <div class="leg-title" id="right-leg">Right Leg</div>
@@ -259,32 +313,34 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <div class="submit-area">
  <div class="submit-row">
-    <button class="submit-btn" id="submitBtn">Submit Sightings</button>
-    <button class="submit-btn" id="unringedBtn">Sighted unringed dipper</button>
+    <button class="submit-btn round-btn-primary" id="submitBtn">Submit Sightings</button>
+
+    <!-- ✅ NEW BUTTON -->
+      <button class="submit-btn round-btn-primary" id="unringedBtn">
+          Sighted unringed dipper
+      </button>
+    </button>
 
     <a href="observations.html" class="obs-link">View last observations</a>
- </div>
+</div>
 
- <div class="small-muted location-note">Your location will be requested when submitting sightings.</div>
+  <div class="small-muted location-note">Your location will be requested when submitting sightings.</div>
 </div>
 
 <div id="results">Loading CSV…</div>
 <div id="toast" class="toast"></div>
 
-<!-- MODAL -->
+<!-- Confirmation modal -->
 <div id="confirmModal" class="modal-overlay" aria-hidden="true">
-  <div class="modal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <h2 id="confirmTitle">Confirm submission</h2>
     <div class="modal-section">
-      <strong>Birds to submit:</strong>
+      <div><strong>Birds to submit:</strong></div>
       <div id="confirmList" class="modal-list"></div>
     </div>
-
     <div class="modal-section">
-      <strong>Location:</strong>
-      <span id="confirmLocationText"></span>
+      <div><strong>Location:</strong> <span id="confirmLocationText"></span></div>
     </div>
-
     <div class="modal-section">
       <div class="modal-territory-row">
         <label for="territorySelect">Override / add territory:</label>
@@ -294,21 +350,468 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
       </div>
       <div class="small-muted">
         If you choose a territory, GPS coordinates will NOT be stored,
-        only the territory text.
+        only the territory text (e.g. "Muur (46.62, 10.19)").
       </div>
     </div>
-
     <div class="modal-footer">
       <button type="button" class="secondary" id="cancelSubmitBtn">Cancel</button>
       <button type="button" class="primary" id="confirmSubmitBtn">OK</button>
     </div>
-
   </div>
 </div>
 
 <script>
-/* JS unchanged — omitted for brevity, include your full JS here */
-</script>
+const CSV_URL="/view_birdsCSV_apps.csv";
+const ACTION_IDS={sighted:4519311, maybe:4519312};
+const topColors=["alu","red","blue","pink","white"];
+const bottomColors=["yellow","green","violet","black"];
+const colorCodeMap={
+  yellow:{code:"ylw",color:"goldenrod"},
+  alu:{code:"alu",color:"gray"},
+  metal:{code:"alu",color:"gray"},
+  black:{code:"blk",color:"#111"},
+  red:{code:"red",color:"red"},
+  green:{code:"grn",color:"green"},
+  violet:{code:"vlt",color:"purple"},
+  pink:{code:"pnk",color:"hotpink"},
+  blue:{code:"blu",color:"steelblue"},
+  white:{code:"wht",color:"#eee"}
+};
 
+/* Territory list */
+const TERRITORIES = [
+  { name: "Muur",              lat: 46.624955,         lon: 10.193195 },
+  { name: "Wehr",              lat: 46.6284110862761,  lon: 10.194532983005 },
+  { name: "Valletta",          lat: 46.633326401934,   lon: 10.193483736366 },
+  { name: "Engi",              lat: 46.6344845294952,  lon: 10.1866728533059 },
+  { name: "Nordknick",         lat: 46.6352981608361,  lon: 10.1833343412727 },
+  { name: "Punt Periv",        lat: 46.6370402555912,  lon: 10.1819842681288 },
+  { name: "PP - Höhli",        lat: 46.63906,          lon: 10.17906 },
+  { name: "Höhli",             lat: 46.64244,          lon: 10.17616 },
+  { name: "Kleine Eier",       lat: 46.64587,          lon: 10.17120 },
+  { name: "Tiefstelle",        lat: 46.64919,          lon: 10.16859 },
+  { name: "Felsen",            lat: 46.64953,          lon: 10.17391 },
+  { name: "Unterste",          lat: 46.65314,          lon: 10.16814 },
+  { name: "US-400",            lat: 46.68078,          lon: 10.14187 },
+  { name: "US-600",            lat: 46.68281,          lon: 10.14156 },
+  { name: "US-1000",           lat: 46.68545,          lon: 10.14004 },
+  { name: "US_Westknick",      lat: 46.68680,          lon: 10.14078 },
+  { name: "Hohe Schlucht",     lat: 46.68787,          lon: 10.13348 },
+  { name: "Ova da Laschadura", lat: 46.68813,          lon: 10.13217 },
+  { name: "Tiefe Schlucht",    lat: 46.68820,          lon: 10.13016 },
+  { name: "US_Felsen",         lat: 46.69179,          lon: 10.12595 },
+  { name: "Val da Barcli",     lat: 46.69340,          lon: 10.12069 },
+  { name: "Cluozza",           lat: 46.69338,          lon: 10.11842 },
+  { name: "Felswändli",        lat: 46.69501,          lon: 10.11522 },
+  { name: "Zernezbrücke",      lat: 46.69586,          lon: 10.10172 }
+];
+
+function normalizeColorKey(s){
+  if(!s) return "";
+  s=String(s).toLowerCase().trim();
+  if(s==="metal") return "alu";
+  if(s==="black"||s.startsWith("blk")) return "black";
+  if(s.startsWith("yl")) return "yellow";
+  if(s.startsWith("alu")) return "alu";
+  if(s.startsWith("red")) return "red";
+  if(s.startsWith("gr")) return "green";
+  if(s.startsWith("vio")||s==="vlt") return "violet";
+  if(s.startsWith("pn")||s==="pnk") return "pink";
+  if(s.startsWith("bl")||s==="blu") return "blue";
+  if(s.startsWith("wh")||s==="wht") return "white";
+  return s;
+}
+function codePillFor(raw){
+  const key=normalizeColorKey(raw);
+  const meta=colorCodeMap[key];
+  if(!meta) return `<span class="code-pill">${escapeHtml(raw||"")}</span>`;
+  const textColor=(meta.code==="wht")?"#000":meta.color;
+  const bg=(meta.code==="wht")?"#eee":"transparent";
+  return `<span class="code-pill" style="color:${textColor};background:${bg}">${meta.code}</span>`;
+}
+function escapeHtml(s){
+  return String(s||"").replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#39;");
+}
+
+const perBirdSelection=new Map();
+let birds=[];
+const resultsEl=document.getElementById("results");
+
+function makeColorButton(name){
+  const b=document.createElement("button");
+  b.type="button";
+  b.className="color "+name;
+  b.textContent=name;
+  if(name==="white") b.classList.add("white");
+  return b;
+}
+
+const rightSel=[], leftSel=[];
+function populateColors(gridId, colors, sideArr){
+  const grid=document.getElementById(gridId);
+  colors.forEach(c=>{
+    const b=makeColorButton(c);
+    b.addEventListener("click", ()=>{ toggleColorSelection(sideArr,c,b); });
+    grid.appendChild(b);
+  });
+}
+function toggleColorSelection(arr, color, btn){
+  const idx=arr.indexOf(color);
+  if(idx>=0){
+    arr.splice(idx,1);
+    btn.classList.remove("selected");
+  } else if(arr.length<2){
+    arr.push(color);
+    btn.classList.add("selected");
+  }
+  renderFilteredTable();
+}
+
+document.getElementById("resetColorsBtn").addEventListener("click", ()=>{
+  rightSel.splice(0);
+  leftSel.splice(0);
+  document.querySelectorAll("button.color").forEach(b=>b.classList.remove("selected"));
+  renderFilteredTable();
+});
+
+populateColors("topColors", topColors, rightSel);
+populateColors("bottomColors", bottomColors, rightSel);
+populateColors("topColorsLeft", topColors, leftSel);
+populateColors("bottomColorsLeft", bottomColors, leftSel);
+
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/);
+  if(lines.length===0) return [];
+  const headers=lines[0].split(",").map(h=>h.replace(/"/g,'').trim().toLowerCase());
+  const gi=key=>headers.indexOf(key);
+  const i_bird_id=gi("bird_id"),i_name=gi("name"),i_sex=gi("sex"),i_age=gi("age"),
+        i_r_top=gi("r_top"),i_r_bottom=gi("r_bottom"),i_l_top=gi("l_top"),i_l_bottom=gi("l_bottom"),
+        i_territory=gi("territory"),i_territory_name=gi("territory_name"),
+        i_dist=gi("dist punt dal gal (m)"),i_banded_on=gi("banded_on");
+  return lines.slice(1).map(row=>{
+    const cols=[];
+    row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)?.forEach(x=>cols.push(x.replace(/^"|"$/g,'').trim()));
+    return {
+      bird_id:cols[i_bird_id]||"",
+      name:cols[i_name]||"",
+      sex:cols[i_sex]||"",
+      age:cols[i_age]||"",
+      Rt:(cols[i_r_top]||"").toLowerCase(),
+      Rb:(cols[i_r_bottom]||"").toLowerCase(),
+      Lt:(cols[i_l_top]||"").toLowerCase(),
+      Lb:(cols[i_l_bottom]||"").toLowerCase(),
+      territory:cols[i_territory]||cols[i_territory_name]||"",
+      dist:cols[i_dist]||"",
+      banded_on:cols[i_banded_on]||""
+    };
+  });
+}
+
+function matchesRow(row){
+  const leftOk=[normalizeColorKey(row.Lt),normalizeColorKey(row.Lb)].filter(Boolean);
+  const rightOk=[normalizeColorKey(row.Rt),normalizeColorKey(row.Rb)].filter(Boolean);
+  const Rsel=rightSel.filter(Boolean);
+  const Lsel=leftSel.filter(Boolean);
+  return (Rsel.length===0||Rsel.every(sel=>rightOk.includes(sel))) &&
+         (Lsel.length===0||Lsel.every(sel=>leftOk.includes(sel)));
+}
+
+function renderFilteredTable(){
+  if(!birds.length){
+    resultsEl.innerHTML="<p class='small-muted'>No data loaded yet.</p>";
+    return;
+  }
+  const matched=birds.filter(matchesRow);
+  if(matched.length===0){
+    resultsEl.innerHTML="<p class='small-muted'>No matches.</p>";
+    return;
+  }
+
+  const table=document.createElement("table");
+  const thead=document.createElement("thead");
+  const trh=document.createElement("tr");
+  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+    const th=document.createElement("th");
+    th.textContent=h;
+    if(i===3) th.classList.add("codes-column");
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  table.appendChild(thead);
+
+  const tbody=document.createElement("tbody");
+  matched.forEach(row=>{
+    const tr=document.createElement("tr");
+    const tdName=document.createElement("td");
+    tdName.innerHTML=`${escapeHtml(row.name||"")} <div class="small-muted">(${escapeHtml(row.bird_id||"")})</div>`;
+    tr.appendChild(tdName);
+
+    const tdSex=document.createElement("td");
+    tdSex.textContent=`${row.sex||""}${row.age?" / "+row.age:""}${row.banded_on?" ("+row.banded_on+")":""}`;
+    tr.appendChild(tdSex);
+
+    const tdTerr=document.createElement("td");
+    tdTerr.textContent=`${row.territory||""}${row.dist?" ("+row.dist+" m)":""}`;
+    tr.appendChild(tdTerr);
+
+    const tdCodes=document.createElement("td");
+    tdCodes.classList.add("codes-column");
+    tdCodes.innerHTML=`${codePillFor(row.Rt)}/${codePillFor(row.Rb)}-${codePillFor(row.Lt)}/${codePillFor(row.Lb)}`;
+    tr.appendChild(tdCodes);
+
+    const tdActions=document.createElement("td");
+    const wrap=document.createElement("div");
+    wrap.className="action-group vertical";
+
+    const btnSight=document.createElement("button");
+    btnSight.type="button";
+    btnSight.className="toggle-btn sighted";
+    btnSight.textContent="Sighted";
+
+    const btnMaybe=document.createElement("button");
+    btnMaybe.type="button";
+    btnMaybe.className="toggle-btn maybe";
+    btnMaybe.textContent="Maybe";
+
+    const cur=perBirdSelection.get(row.bird_id)||null;
+    if(cur==="sighted") btnSight.classList.add("toggle-on","sighted");
+    if(cur==="maybe") btnMaybe.classList.add("toggle-on","maybe");
+
+    btnSight.addEventListener("click", ()=>{
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="sighted"?null:"sighted");
+      renderFilteredTable();
+    });
+    btnMaybe.addEventListener("click", ()=>{
+      perBirdSelection.set(row.bird_id, perBirdSelection.get(row.bird_id)==="maybe"?null:"maybe");
+      renderFilteredTable();
+    });
+
+    wrap.appendChild(btnSight);
+    wrap.appendChild(btnMaybe);
+    tdActions.appendChild(wrap);
+    tr.appendChild(tdActions);
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  resultsEl.innerHTML="";
+  resultsEl.appendChild(table);
+}
+
+/* ---- Confirmation modal logic ---- */
+
+const modalEl = document.getElementById("confirmModal");
+const confirmListEl = document.getElementById("confirmList");
+const confirmLocationTextEl = document.getElementById("confirmLocationText");
+const territorySelectEl = document.getElementById("territorySelect");
+const confirmSubmitBtn = document.getElementById("confirmSubmitBtn");
+const cancelSubmitBtn = document.getElementById("cancelSubmitBtn");
+
+let pendingEntries=null;
+let pendingGps={lat:null, lon:null};
+
+function populateTerritorySelect(){
+  TERRITORIES.forEach(t=>{
+    const opt=document.createElement("option");
+    opt.value=t.name;
+    opt.textContent=t.name;
+    territorySelectEl.appendChild(opt);
+  });
+}
+populateTerritorySelect();
+
+function openConfirmModal(entries, gps){
+  pendingEntries = entries;
+  pendingGps = gps;
+
+  confirmListEl.innerHTML="";
+  const ul=document.createElement("ul");
+  ul.style.margin="4px 0";
+  ul.style.paddingLeft="18px";
+
+  entries.forEach(e=>{
+    const li=document.createElement("li");
+    const row=e.row;
+    const labelAction = e.action==="sighted" ? "Sighted" : "Maybe";
+    li.textContent = `${row.name || "(unnamed)"} (${row.bird_id || ""}) – ${labelAction}`;
+    ul.appendChild(li);
+  });
+  confirmListEl.appendChild(ul);
+
+  if (gps && gps.lat!=null && gps.lon!=null){
+    confirmLocationTextEl.textContent = `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)}`;
+  } else {
+    confirmLocationTextEl.textContent = "NOT AVAILABLE";
+  }
+
+  territorySelectEl.value = "";
+
+  modalEl.classList.add("show");
+  modalEl.setAttribute("aria-hidden","false");
+}
+
+function closeConfirmModal(){
+  modalEl.classList.remove("show");
+  modalEl.setAttribute("aria-hidden","true");
+}
+
+/* Get GPS (may fail gracefully) */
+async function getGps(){
+  if(!navigator.geolocation){
+    return {lat:null, lon:null};
+  }
+  return new Promise(resolve=>{
+    navigator.geolocation.getCurrentPosition(
+      pos=>resolve({
+        lat:Number(pos.coords.latitude.toFixed(10)),
+        lon:Number(pos.coords.longitude.toFixed(10))
+      }),
+      ()=>resolve({lat:null, lon:null}),
+      {timeout:8000}
+    );
+  });
+}
+
+/* Submit button */
+document.getElementById("submitBtn").addEventListener("click", async ()=>{
+  const entries=[];
+  for(const [bird_id,val] of perBirdSelection.entries()){
+    if(val==="sighted"||val==="maybe"){
+      const row=birds.find(b=>b.bird_id===bird_id);
+      if(!row) continue;
+      entries.push({row,action:val});
+    }
+  }
+  if(entries.length===0){
+    alert("No selected birds to submit.");
+    return;
+  }
+
+  const gps = await getGps();
+  openConfirmModal(entries, gps);
+});
+
+  /* ---- NEW: Submit an unringed dipper ---- */
+
+document.getElementById("unringedBtn").addEventListener("click", async () => {
+
+  // Same GPS retrieval as normal sightings
+  const gps = await getGps();
+
+  // Prepare a pseudo-entry for the modal
+  const unringedEntry = {
+    row: {
+      name: "unringed",
+      bird_id: "",   // NULL in Baserow
+    },
+    action: "sighted"
+  };
+
+  // open the modal (reuses same logic)
+  openConfirmModal([unringedEntry], gps);
+});
+
+
+/* Cancel inside modal */
+cancelSubmitBtn.addEventListener("click", ()=>{
+  pendingEntries = null;
+  pendingGps = null;
+  closeConfirmModal();
+});
+
+/* Confirm inside modal: actually POST to /api/submit */
+confirmSubmitBtn.addEventListener("click", async ()=>{
+  if(!pendingEntries || !Array.isArray(pendingEntries) || pendingEntries.length===0){
+    closeConfirmModal();
+    return;
+  }
+
+  const gps = pendingGps || {lat:null, lon:null};
+  const selectedName = territorySelectEl.value;
+  const selectedTerritory = TERRITORIES.find(t=>t.name===selectedName) || null;
+
+  let finalLat = gps.lat;
+  let finalLon = gps.lon;
+  let territoryText = "";
+
+  if (selectedTerritory){
+  // ✅ save territory name AND GPS coords
+  finalLat = Number(selectedTerritory.lat.toFixed(10));
+finalLon = Number(selectedTerritory.lon.toFixed(10));
+  territoryText = selectedTerritory.name;
+} else {
+  // ✅ GPS fallback
+  if (gps.lat == null || gps.lon == null){
+    finalLat = null;
+    finalLon = null;
+    territoryText = "";
+  } else {
+    finalLat = gps.lat;
+    finalLon = gps.lon;
+    territoryText = "";
+  }
+}
+
+
+
+  closeConfirmModal();
+
+  let successCount=0;
+  for(const e of pendingEntries){
+        const payload = {
+          bird_name: e.row.name,
+          bird_id: e.row.bird_id || null,
+          action: e.action==="sighted" ? ACTION_IDS.sighted : ACTION_IDS.maybe,
+          latitude: finalLat,
+          longitude: finalLon,
+          territory: territoryText
+        };
+
+    try{
+      const r=await fetch("/api/submit",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(payload)
+      });
+      if(r.ok){
+        successCount++;
+      } else {
+        const txt=await r.text().catch(()=> "");
+        console.error("Baserow save error", r.status, txt);
+      }
+    }catch(err){
+      console.error("Network error posting to Baserow", err);
+    }
+  }
+
+  showToast(`Submitted ${successCount}/${pendingEntries.length}`);
+  pendingEntries = null;
+  pendingGps = null;
+  perBirdSelection.clear();
+  renderFilteredTable();
+});
+
+/* Toast */
+function showToast(msg,t=3000){
+  const toast=document.getElementById("toast");
+  toast.textContent=msg;
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),t);
+}
+
+/* Load CSV and start */
+fetch(CSV_URL)
+  .then(r=>r.ok?r.text():Promise.reject(r.statusText))
+  .then(txt=>{ birds=parseCSV(txt); renderFilteredTable(); })
+  .catch(err=>{
+    resultsEl.innerHTML=`<p style="color:crimson">⚠️ Failed to load CSV: ${escapeHtml(String(err))}</p>`;
+    console.error(err);
+  });
+</script>
 </body>
 </html>
