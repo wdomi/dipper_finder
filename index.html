@@ -213,6 +213,34 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
   th, td{ padding:6px 4px; font-size:13px; }
   h1{ font-size:22px; }
 }
+
+  /* --- ONLY UI NAVIGATION & SUBMIT BUTTONS GET NEW STYLE --- */
+
+.round-btn {
+  padding:6px 12px;               /* smaller padding */
+  border-radius:999px;            /* fully rounded */
+  border:1px solid #bbb;          /* light border */
+  font-size:14px;
+  cursor:pointer;
+  text-decoration:none;
+  display:inline-block;
+  background:#eee;
+  color:#222;
+}
+
+/* Primary version (accent background) */
+.round-btn-primary {
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fff;
+}
+
+/* Hover effect */
+.round-btn:hover,
+.round-btn-primary:hover {
+  opacity:0.85;
+}
+
 </style>
 </head>
 
@@ -224,14 +252,14 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
     <h1><img src="/Johann.png" class="bird-img" alt="Dipper"> Dipper Finder</h1>
 
     <div class="header-buttons">
-      <a href="https://nest-logger.vercel.app" class="goto-btn">Nest Logger</a>
-      <a href="https://wdomi.github.io/dipper_map/" class="goto-btn">Nests Map</a>
+      <a href="https://nest-logger.vercel.app" class="round-btn round-btn-primary">Nest Logger</a>
+      <a href="https://wdomi.github.io/dipper_map/" class="round-btn round-btn-primary">Nests Map</a>
     </div>
   </div>
 
   <!-- SECOND ROW: reset + instructions -->
   <div class="top-actions">
-    <button class="reset-btn" id="resetColorsBtn">Reset</button>
+    <button class="reset-btn round-btn" id="resetColorsBtn">Reset</button>
     <div class="small-muted">Select up to 2 colors per leg</div>
   </div>
 
@@ -253,10 +281,12 @@ td.codes-column, th.codes-column{ font-size:12px; line-height:1.2; }
 
 <div class="submit-area">
  <div class="submit-row">
-    <button class="submit-btn" id="submitBtn">Submit Sightings</button>
+    <button class="submit-btn round-btn-primary" id="submitBtn">Submit Sightings</button>
 
     <!-- ✅ NEW BUTTON -->
-    <button class="submit-btn" id="unringedBtn" style="background:#444;">
+      <button class="submit-btn round-btn-primary" id="unringedBtn">
+  Sighted unringed dipper
+      </button>
       Sighted unringed dipper
     </button>
 
