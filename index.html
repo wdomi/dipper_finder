@@ -76,37 +76,29 @@ h1{ font-size:24px; display:flex; align-items:center; gap:8px; margin:0; }
 .color-grid.top-row { grid-template-columns:repeat(5,1fr); }
 .color-grid.bottom-row { grid-template-columns:repeat(5,1fr); }
 
-button.color {
-  font-size:12px;
-  font-weight:700;
-  padding:2px 4px;
-  height:28px;
-  border-radius:6px;
-  border:2px solid transparent;
+/* Base button shape */
+.btn-base {
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid #bbb;
   cursor:pointer;
-  text-align:center;
+  font-size:13px;
+  font-weight:600;
+  background:#f4f4f4;
+  color:#222;
+  transition:0.15s;
 }
-button.color.selected { border-color:#000; }
 
-.alu{ background:gray; color:white; }
-.red{ background:red; color:white; }
-.yellow{ background:goldenrod; color:white; }
-.green{ background:green; color:white; }
-.blue{ background:steelblue; color:white; }
-.black{ background:#222222; color:white; }
-.violet{ background:purple; color:white; }
-.pink{ background:hotpink; color:white; }
-.white{ background:#eee; color:black; border:1px solid #999; }
-
-.submit-area{ margin-top:6px; }
-.submit-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  flex-wrap:wrap;
+.btn-base:hover {
+  opacity:0.9;
 }
-.submit-btn{ background:var(--accent); color:white; padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-size:15px; text-align:left; display:block; }
+
+/* Selected = primary style */
+.btn-selected {
+  border-color:var(--accent);
+  background:var(--accent);
+  color:#fff !important;
+}
 
 .obs-link{
   font-size:14px;
