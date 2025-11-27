@@ -570,12 +570,12 @@ function renderFilteredTable(){
     const btnSight=document.createElement("button");
     btnSight.type="button";
     btnSight.className="toggle-btn sighted";
-    btnSight.textContent="Sighted";
+    btnSight.textContent="beobachtet";
 
     const btnMaybe=document.createElement("button");
     btnMaybe.type="button";
     btnMaybe.className="toggle-btn maybe";
-    btnMaybe.textContent="Maybe";
+    btnMaybe.textContent="unsicher";
 
     const cur=perBirdSelection.get(row.bird_id)||null;
     if(cur==="sighted") btnSight.classList.add("toggle-on","sighted");
