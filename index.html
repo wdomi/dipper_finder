@@ -534,7 +534,7 @@ function renderFilteredTable(){
   const table=document.createElement("table");
   const thead=document.createElement("thead");
   const trh=document.createElement("tr");
-  ["Name (bird_id)","Sex / Age (Banded)","Territory (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
+  ["Name (bird_id)","Sex / Alter (beringt am)","Revier (Dist m)","R↑/↓ - L↑/↓","Actions"].forEach((h,i)=>{
     const th=document.createElement("th");
     th.textContent=h;
     if(i===3) th.classList.add("codes-column");
